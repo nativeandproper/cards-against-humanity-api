@@ -26,7 +26,7 @@ func Up00002(tx *sql.Tx) error {
 	// create black cards table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS black_cards (
 			id SERIAL PRIMARY KEY, 
-			text VARCHAR(200) NOT NULL, 
+			text text NOT NULL, 
 			pick INTEGER NOT NULL,
 			set_id  INTEGER NOT NULL REFERENCES sets(id), 
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
@@ -41,7 +41,7 @@ func Up00002(tx *sql.Tx) error {
 	// create white cards table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS white_cards (
 		id SERIAL PRIMARY KEY, 
-		text VARCHAR(200) NOT NULL, 
+		text text NOT NULL, 
 		set_id  INTEGER NOT NULL REFERENCES sets(id), 
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
 		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
