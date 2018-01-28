@@ -12,7 +12,7 @@ func init() {
 func Up00001(tx *sql.Tx) error {
 
 	// create account types enum
-	_, err := tx.Exec(`CREATE TYPE account_type AS ENUM ('basic')`)
+	_, err := tx.Exec(`CREATE TYPE account_type AS ENUM ('basic', 'admin')`)
 	if err != nil {
 		return err
 	}
