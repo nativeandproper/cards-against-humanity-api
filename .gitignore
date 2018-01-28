@@ -1,4 +1,5 @@
 goose
 main
+/vendor
 .env
 .DS_Store
