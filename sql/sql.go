@@ -2,8 +2,9 @@ package sql
 
 import (
 	"database/sql"
-	"fmt"
+	// Postgres driver
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog/log"
 )
 
 // NewSQLClient returns SQL instance
@@ -19,6 +20,6 @@ func NewSQLClient(sqlAddress string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	fmt.Println("Successfully connected to Postgres")
+	log.Print("Successfully connected to Postgres")
 	return db, nil
 }

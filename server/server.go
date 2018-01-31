@@ -3,8 +3,9 @@ package server
 import (
 	users "cards-against-humanity-api/users"
 	"github.com/julienschmidt/httprouter"
-	"log"
+	"github.com/rs/zerolog"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -16,13 +17,15 @@ const (
 
 // Server struct
 type Server struct {
-	User *users.UserClient
+	User   *users.UserClient
+	Logger zerolog.Logger
 }
 
 // New creates a new instance of Server w
-func New(userClient *users.UserClient) *Server {
+func New(userClient *users.UserClient, logger zerolog.Logger) *Server {
 	return &Server{
-		userClient,
+		User:   userClient,
+		Logger: logger,
 	}
 }
 
@@ -36,11 +39,11 @@ func (s *Server) ListenAndServe(httpAddr string) {
 		Handler:      s.newRouter(),
 	}
 
-	log.Println("Listening ...")
+	s.Logger.Info().Msgf("Listening on port %s", strings.Split(httpAddr, ":")[1])
 
 	err := srv.ListenAndServe()
 	if err != nil {
-		log.Println(err)
+		s.Logger.Error().Err(err)
 	}
 }
 
