@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cards Against Humanity API Account Verification</title>
+</head>
+
+<body style="max-width:600px">
+    <table style="color:#000">
+        <tr style="display:block">Hello {{ .Name }},</tr>
+        <tr style="display:block;margin:20px 0">
+            <td style="display:block;width:600px;">
+                Please verify your email address to complete your Cards Against Humanity Account setup. For security purposes, your verification
+                token will expire in
+                <strong>24 hours</strong>.
+            </td>
+        </tr>
+        <tr>
+            <td style="display: block;width:600px;margin:15px auto">
+                <button style="display:block;margin:auto;font-size:16px;font-weight:600;border-radius:3px;padding:10px;border-style:solid;border-width:1px;border-color:#000;">
+                    <a style="color:#000;text-decoration:none;" href={{ .VerificationLink }}> Verify Now</a>
+                </button>
+            </td>
+        </tr>
+        <tr style="color:#000">
+            <td style="display: block;width:400px">
+                Can't see the button? Here's the link:
+            </td>
+        </tr>
+        <tr style="display:block;margin:10px 0">
+            <td style="display: block;width:600px">
+                <a style="color:#000;text-decoration:underline;" href={{ .VerificationLink }}> {{ .VerificationLink }}</a>
+            </td>
+        </tr>
+        <tr></tr>
+        <tr style="display:block;margin:20px 0">
+            <td style="display: block;width:400px">
+                Thanks,
+            </td>
+        </tr>
+        <tr style="display:block;margin:20px 0">
+            <td style="display: block;width:400px">
+                --Cards Against Humanity Admin
+            </td>
+        </tr>
+        <tr>
+            <td style="display: block;width:550px">
+                P.S. Consider making an API token in the developer console as your next step!
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
