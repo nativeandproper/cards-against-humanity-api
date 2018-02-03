@@ -900,112 +900,7 @@ func testUserToManyAddOpUserVerificationTokens(t *testing.T) {
 		}
 	}
 }
-func testUserToOneAccountTypeUsingCurrentAccountType(t *testing.T) {
-	tx := MustTx(boil.Begin())
-	defer tx.Rollback()
 
-	var local User
-	var foreign AccountType
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, userDBTypes, false, userColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, accountTypeDBTypes, false, accountTypeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize AccountType struct: %s", err)
-	}
-
-	if err := foreign.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	local.CurrentAccountTypeID = foreign.ID
-	if err := local.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.CurrentAccountType(tx).One()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	slice := UserSlice{&local}
-	if err = local.L.LoadCurrentAccountType(tx, false, (*[]*User)(&slice)); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.CurrentAccountType == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.CurrentAccountType = nil
-	if err = local.L.LoadCurrentAccountType(tx, true, &local); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.CurrentAccountType == nil {
-		t.Error("struct should have been eager loaded")
-	}
-}
-
-func testUserToOneSetOpAccountTypeUsingCurrentAccountType(t *testing.T) {
-	var err error
-
-	tx := MustTx(boil.Begin())
-	defer tx.Rollback()
-
-	var a User
-	var b, c AccountType
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, accountTypeDBTypes, false, strmangle.SetComplement(accountTypePrimaryKeyColumns, accountTypeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, accountTypeDBTypes, false, strmangle.SetComplement(accountTypePrimaryKeyColumns, accountTypeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := a.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	for i, x := range []*AccountType{&b, &c} {
-		err = a.SetCurrentAccountType(tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if a.R.CurrentAccountType != x {
-			t.Error("relationship struct not set to correct value")
-		}
-
-		if x.R.CurrentAccountTypeUsers[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.CurrentAccountTypeID != x.ID {
-			t.Error("foreign key was wrong value", a.CurrentAccountTypeID)
-		}
-
-		zero := reflect.Zero(reflect.TypeOf(a.CurrentAccountTypeID))
-		reflect.Indirect(reflect.ValueOf(&a.CurrentAccountTypeID)).Set(zero)
-
-		if err = a.Reload(tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if a.CurrentAccountTypeID != x.ID {
-			t.Error("foreign key was wrong value", a.CurrentAccountTypeID, x.ID)
-		}
-	}
-}
 func testUsersReload(t *testing.T) {
 	t.Parallel()
 
@@ -1076,7 +971,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-	userDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `CurrentAccountTypeID`: `integer`, `DeletedAt`: `timestamp without time zone`, `Email`: `character varying`, `FirstName`: `character varying`, `ID`: `integer`, `LastName`: `character varying`, `Password`: `character varying`, `UpdatedAt`: `timestamp without time zone`}
+	userDBTypes = map[string]string{`CreatedAt`: `timestamp without time zone`, `DeletedAt`: `timestamp without time zone`, `Email`: `character varying`, `FirstName`: `character varying`, `ID`: `integer`, `LastName`: `character varying`, `Password`: `bytea`, `UpdatedAt`: `timestamp without time zone`}
 	_           = bytes.MinRead
 )
 

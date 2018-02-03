@@ -186,7 +186,6 @@ func TestToOne(t *testing.T) {
 	t.Run("UserAPIKeyToUserUsingUser", testUserAPIKeyToOneUserUsingUser)
 	t.Run("UserAPIKeyToAPIKeyUsingAPIKey", testUserAPIKeyToOneAPIKeyUsingAPIKey)
 	t.Run("UserVerificationTokenToUserUsingUser", testUserVerificationTokenToOneUserUsingUser)
-	t.Run("UserToAccountTypeUsingCurrentAccountType", testUserToOneAccountTypeUsingCurrentAccountType)
 	t.Run("WhiteCardToSetUsingSet", testWhiteCardToOneSetUsingSet)
 }
 
@@ -198,7 +197,6 @@ func TestOneToOne(t *testing.T) {}
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("AccountTypeToUserAccountTypeHistories", testAccountTypeToManyUserAccountTypeHistories)
-	t.Run("AccountTypeToCurrentAccountTypeUsers", testAccountTypeToManyCurrentAccountTypeUsers)
 	t.Run("APIKeyToUserAPIKeys", testAPIKeyToManyUserAPIKeys)
 	t.Run("SetToBlackCards", testSetToManyBlackCards)
 	t.Run("SetToWhiteCards", testSetToManyWhiteCards)
@@ -216,7 +214,6 @@ func TestToOneSet(t *testing.T) {
 	t.Run("UserAPIKeyToUserUsingUser", testUserAPIKeyToOneSetOpUserUsingUser)
 	t.Run("UserAPIKeyToAPIKeyUsingAPIKey", testUserAPIKeyToOneSetOpAPIKeyUsingAPIKey)
 	t.Run("UserVerificationTokenToUserUsingUser", testUserVerificationTokenToOneSetOpUserUsingUser)
-	t.Run("UserToAccountTypeUsingCurrentAccountType", testUserToOneSetOpAccountTypeUsingCurrentAccountType)
 	t.Run("WhiteCardToSetUsingSet", testWhiteCardToOneSetOpSetUsingSet)
 }
 
@@ -236,7 +233,6 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("AccountTypeToUserAccountTypeHistories", testAccountTypeToManyAddOpUserAccountTypeHistories)
-	t.Run("AccountTypeToCurrentAccountTypeUsers", testAccountTypeToManyAddOpCurrentAccountTypeUsers)
 	t.Run("APIKeyToUserAPIKeys", testAPIKeyToManyAddOpUserAPIKeys)
 	t.Run("SetToBlackCards", testSetToManyAddOpBlackCards)
 	t.Run("SetToWhiteCards", testSetToManyAddOpWhiteCards)

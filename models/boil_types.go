@@ -49,5 +49,4 @@ func makeCacheKey(wl, nzDefaults []string) string {
 // Enum values for account_type
 const (
 	AccountTypeBasic = "basic"
-	AccountTypeAdmin = "admin"
 )

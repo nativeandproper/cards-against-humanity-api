@@ -534,78 +534,6 @@ func testAccountTypeToManyUserAccountTypeHistories(t *testing.T) {
 	}
 }
 
-func testAccountTypeToManyCurrentAccountTypeUsers(t *testing.T) {
-	var err error
-	tx := MustTx(boil.Begin())
-	defer tx.Rollback()
-
-	var a AccountType
-	var b, c User
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, accountTypeDBTypes, true, accountTypeColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize AccountType struct: %s", err)
-	}
-
-	if err := a.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	randomize.Struct(seed, &b, userDBTypes, false, userColumnsWithDefault...)
-	randomize.Struct(seed, &c, userDBTypes, false, userColumnsWithDefault...)
-
-	b.CurrentAccountTypeID = a.ID
-	c.CurrentAccountTypeID = a.ID
-	if err = b.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	user, err := a.CurrentAccountTypeUsers(tx).All()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bFound, cFound := false, false
-	for _, v := range user {
-		if v.CurrentAccountTypeID == b.CurrentAccountTypeID {
-			bFound = true
-		}
-		if v.CurrentAccountTypeID == c.CurrentAccountTypeID {
-			cFound = true
-		}
-	}
-
-	if !bFound {
-		t.Error("expected to find b")
-	}
-	if !cFound {
-		t.Error("expected to find c")
-	}
-
-	slice := AccountTypeSlice{&a}
-	if err = a.L.LoadCurrentAccountTypeUsers(tx, false, (*[]*AccountType)(&slice)); err != nil {
-		t.Fatal(err)
-	}
-	if got := len(a.R.CurrentAccountTypeUsers); got != 2 {
-		t.Error("number of eager loaded records wrong, got:", got)
-	}
-
-	a.R.CurrentAccountTypeUsers = nil
-	if err = a.L.LoadCurrentAccountTypeUsers(tx, true, &a); err != nil {
-		t.Fatal(err)
-	}
-	if got := len(a.R.CurrentAccountTypeUsers); got != 2 {
-		t.Error("number of eager loaded records wrong, got:", got)
-	}
-
-	if t.Failed() {
-		t.Logf("%#v", user)
-	}
-}
-
 func testAccountTypeToManyAddOpUserAccountTypeHistories(t *testing.T) {
 	var err error
 
@@ -672,80 +600,6 @@ func testAccountTypeToManyAddOpUserAccountTypeHistories(t *testing.T) {
 		}
 
 		count, err := a.UserAccountTypeHistories(tx).Count()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if want := int64((i + 1) * 2); count != want {
-			t.Error("want", want, "got", count)
-		}
-	}
-}
-func testAccountTypeToManyAddOpCurrentAccountTypeUsers(t *testing.T) {
-	var err error
-
-	tx := MustTx(boil.Begin())
-	defer tx.Rollback()
-
-	var a AccountType
-	var b, c, d, e User
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, accountTypeDBTypes, false, strmangle.SetComplement(accountTypePrimaryKeyColumns, accountTypeColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*User{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	foreignersSplitByInsertion := [][]*User{
-		{&b, &c},
-		{&d, &e},
-	}
-
-	for i, x := range foreignersSplitByInsertion {
-		err = a.AddCurrentAccountTypeUsers(tx, i != 0, x...)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		first := x[0]
-		second := x[1]
-
-		if a.ID != first.CurrentAccountTypeID {
-			t.Error("foreign key was wrong value", a.ID, first.CurrentAccountTypeID)
-		}
-		if a.ID != second.CurrentAccountTypeID {
-			t.Error("foreign key was wrong value", a.ID, second.CurrentAccountTypeID)
-		}
-
-		if first.R.CurrentAccountType != &a {
-			t.Error("relationship was not added properly to the foreign slice")
-		}
-		if second.R.CurrentAccountType != &a {
-			t.Error("relationship was not added properly to the foreign slice")
-		}
-
-		if a.R.CurrentAccountTypeUsers[i*2] != first {
-			t.Error("relationship struct slice not set to correct value")
-		}
-		if a.R.CurrentAccountTypeUsers[i*2+1] != second {
-			t.Error("relationship struct slice not set to correct value")
-		}
-
-		count, err := a.CurrentAccountTypeUsers(tx).Count()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -825,7 +679,7 @@ func testAccountTypesSelect(t *testing.T) {
 }
 
 var (
-	accountTypeDBTypes = map[string]string{`APIKeyLimit`: `integer`, `CreatedAt`: `timestamp without time zone`, `ID`: `integer`, `RequestLimit`: `integer`, `Type`: `enum.account_type('basic','admin')`, `UpdatedAt`: `timestamp without time zone`}
+	accountTypeDBTypes = map[string]string{`APIKeyLimit`: `integer`, `CreatedAt`: `timestamp without time zone`, `ID`: `integer`, `RequestLimit`: `integer`, `Type`: `enum.account_type('basic')`, `UpdatedAt`: `timestamp without time zone`}
 	_                  = bytes.MinRead
 )
 

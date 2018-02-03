@@ -52,7 +52,6 @@ var AccountTypeColumns = struct {
 // accountTypeR is where relationships are stored.
 type accountTypeR struct {
 	UserAccountTypeHistories UserAccountTypeHistorySlice
-	CurrentAccountTypeUsers  UserSlice
 }
 
 // accountTypeL is where Load methods for each relationship are stored.
@@ -367,32 +366,6 @@ func (o *AccountType) UserAccountTypeHistories(exec boil.Executor, mods ...qm.Qu
 	return query
 }
 
-// CurrentAccountTypeUsersG retrieves all the user's users via current_account_type_id column.
-func (o *AccountType) CurrentAccountTypeUsersG(mods ...qm.QueryMod) userQuery {
-	return o.CurrentAccountTypeUsers(boil.GetDB(), mods...)
-}
-
-// CurrentAccountTypeUsers retrieves all the user's users with an executor via current_account_type_id column.
-func (o *AccountType) CurrentAccountTypeUsers(exec boil.Executor, mods ...qm.QueryMod) userQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"users\".\"current_account_type_id\"=?", o.ID),
-	)
-
-	query := Users(exec, queryMods...)
-	queries.SetFrom(query.Query, "\"users\"")
-
-	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"\"users\".*"})
-	}
-
-	return query
-}
-
 // LoadUserAccountTypeHistories allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func (accountTypeL) LoadUserAccountTypeHistories(e boil.Executor, singular bool, maybeAccountType interface{}) error {
@@ -457,78 +430,6 @@ func (accountTypeL) LoadUserAccountTypeHistories(e boil.Executor, singular bool,
 		for _, local := range slice {
 			if local.ID == foreign.AccountTypeID {
 				local.R.UserAccountTypeHistories = append(local.R.UserAccountTypeHistories, foreign)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadCurrentAccountTypeUsers allows an eager lookup of values, cached into the
-// loaded structs of the objects.
-func (accountTypeL) LoadCurrentAccountTypeUsers(e boil.Executor, singular bool, maybeAccountType interface{}) error {
-	var slice []*AccountType
-	var object *AccountType
-
-	count := 1
-	if singular {
-		object = maybeAccountType.(*AccountType)
-	} else {
-		slice = *maybeAccountType.(*[]*AccountType)
-		count = len(slice)
-	}
-
-	args := make([]interface{}, count)
-	if singular {
-		if object.R == nil {
-			object.R = &accountTypeR{}
-		}
-		args[0] = object.ID
-	} else {
-		for i, obj := range slice {
-			if obj.R == nil {
-				obj.R = &accountTypeR{}
-			}
-			args[i] = obj.ID
-		}
-	}
-
-	query := fmt.Sprintf(
-		"select * from \"users\" where \"current_account_type_id\" in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
-	)
-	if boil.DebugMode {
-		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
-	}
-
-	results, err := e.Query(query, args...)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load users")
-	}
-	defer results.Close()
-
-	var resultSlice []*User
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.CurrentAccountTypeUsers = resultSlice
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.CurrentAccountTypeID {
-				local.R.CurrentAccountTypeUsers = append(local.R.CurrentAccountTypeUsers, foreign)
 				break
 			}
 		}
@@ -616,90 +517,6 @@ func (o *AccountType) AddUserAccountTypeHistories(exec boil.Executor, insert boo
 			}
 		} else {
 			rel.R.AccountType = o
-		}
-	}
-	return nil
-}
-
-// AddCurrentAccountTypeUsersG adds the given related objects to the existing relationships
-// of the account_type, optionally inserting them as new records.
-// Appends related to o.R.CurrentAccountTypeUsers.
-// Sets related.R.CurrentAccountType appropriately.
-// Uses the global database handle.
-func (o *AccountType) AddCurrentAccountTypeUsersG(insert bool, related ...*User) error {
-	return o.AddCurrentAccountTypeUsers(boil.GetDB(), insert, related...)
-}
-
-// AddCurrentAccountTypeUsersP adds the given related objects to the existing relationships
-// of the account_type, optionally inserting them as new records.
-// Appends related to o.R.CurrentAccountTypeUsers.
-// Sets related.R.CurrentAccountType appropriately.
-// Panics on error.
-func (o *AccountType) AddCurrentAccountTypeUsersP(exec boil.Executor, insert bool, related ...*User) {
-	if err := o.AddCurrentAccountTypeUsers(exec, insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddCurrentAccountTypeUsersGP adds the given related objects to the existing relationships
-// of the account_type, optionally inserting them as new records.
-// Appends related to o.R.CurrentAccountTypeUsers.
-// Sets related.R.CurrentAccountType appropriately.
-// Uses the global database handle and panics on error.
-func (o *AccountType) AddCurrentAccountTypeUsersGP(insert bool, related ...*User) {
-	if err := o.AddCurrentAccountTypeUsers(boil.GetDB(), insert, related...); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// AddCurrentAccountTypeUsers adds the given related objects to the existing relationships
-// of the account_type, optionally inserting them as new records.
-// Appends related to o.R.CurrentAccountTypeUsers.
-// Sets related.R.CurrentAccountType appropriately.
-func (o *AccountType) AddCurrentAccountTypeUsers(exec boil.Executor, insert bool, related ...*User) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.CurrentAccountTypeID = o.ID
-			if err = rel.Insert(exec); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"users\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"current_account_type_id"}),
-				strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.DebugMode {
-				fmt.Fprintln(boil.DebugWriter, updateQuery)
-				fmt.Fprintln(boil.DebugWriter, values)
-			}
-
-			if _, err = exec.Exec(updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.CurrentAccountTypeID = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &accountTypeR{
-			CurrentAccountTypeUsers: related,
-		}
-	} else {
-		o.R.CurrentAccountTypeUsers = append(o.R.CurrentAccountTypeUsers, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &userR{
-				CurrentAccountType: o,
-			}
-		} else {
-			rel.R.CurrentAccountType = o
 		}
 	}
 	return nil

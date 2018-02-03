@@ -22,45 +22,41 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID                   int       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CurrentAccountTypeID int       `boil:"current_account_type_id" json:"current_account_type_id" toml:"current_account_type_id" yaml:"current_account_type_id"`
-	FirstName            string    `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
-	LastName             string    `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
-	Email                string    `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Password             string    `boil:"password" json:"password" toml:"password" yaml:"password"`
-	CreatedAt            null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt            null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt            null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	FirstName string    `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
+	LastName  string    `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
+	Email     string    `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Password  []byte    `boil:"password" json:"password" toml:"password" yaml:"password"`
+	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	DeletedAt null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UserColumns = struct {
-	ID                   string
-	CurrentAccountTypeID string
-	FirstName            string
-	LastName             string
-	Email                string
-	Password             string
-	CreatedAt            string
-	UpdatedAt            string
-	DeletedAt            string
+	ID        string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  string
+	CreatedAt string
+	UpdatedAt string
+	DeletedAt string
 }{
-	ID:                   "id",
-	CurrentAccountTypeID: "current_account_type_id",
-	FirstName:            "first_name",
-	LastName:             "last_name",
-	Email:                "email",
-	Password:             "password",
-	CreatedAt:            "created_at",
-	UpdatedAt:            "updated_at",
-	DeletedAt:            "deleted_at",
+	ID:        "id",
+	FirstName: "first_name",
+	LastName:  "last_name",
+	Email:     "email",
+	Password:  "password",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
+	DeletedAt: "deleted_at",
 }
 
 // userR is where relationships are stored.
 type userR struct {
-	CurrentAccountType       *AccountType
 	UserAccountTypeHistories UserAccountTypeHistorySlice
 	UserAPIKeys              UserAPIKeySlice
 	UserVerificationTokens   UserVerificationTokenSlice
@@ -70,8 +66,8 @@ type userR struct {
 type userL struct{}
 
 var (
-	userColumns               = []string{"id", "current_account_type_id", "first_name", "last_name", "email", "password", "created_at", "updated_at", "deleted_at"}
-	userColumnsWithoutDefault = []string{"current_account_type_id", "first_name", "last_name", "email", "password", "deleted_at"}
+	userColumns               = []string{"id", "first_name", "last_name", "email", "password", "created_at", "updated_at", "deleted_at"}
+	userColumnsWithoutDefault = []string{"first_name", "last_name", "email", "password", "deleted_at"}
 	userColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 )
@@ -352,25 +348,6 @@ func (q userQuery) Exists() (bool, error) {
 	return count > 0, nil
 }
 
-// CurrentAccountTypeG pointed to by the foreign key.
-func (o *User) CurrentAccountTypeG(mods ...qm.QueryMod) accountTypeQuery {
-	return o.CurrentAccountType(boil.GetDB(), mods...)
-}
-
-// CurrentAccountType pointed to by the foreign key.
-func (o *User) CurrentAccountType(exec boil.Executor, mods ...qm.QueryMod) accountTypeQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("id=?", o.CurrentAccountTypeID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	query := AccountTypes(exec, queryMods...)
-	queries.SetFrom(query.Query, "\"account_types\"")
-
-	return query
-}
-
 // UserAccountTypeHistoriesG retrieves all the user_account_type_history's user account type history.
 func (o *User) UserAccountTypeHistoriesG(mods ...qm.QueryMod) userAccountTypeHistoryQuery {
 	return o.UserAccountTypeHistories(boil.GetDB(), mods...)
@@ -447,84 +424,6 @@ func (o *User) UserVerificationTokens(exec boil.Executor, mods ...qm.QueryMod) u
 	}
 
 	return query
-}
-
-// LoadCurrentAccountType allows an eager lookup of values, cached into the
-// loaded structs of the objects.
-func (userL) LoadCurrentAccountType(e boil.Executor, singular bool, maybeUser interface{}) error {
-	var slice []*User
-	var object *User
-
-	count := 1
-	if singular {
-		object = maybeUser.(*User)
-	} else {
-		slice = *maybeUser.(*[]*User)
-		count = len(slice)
-	}
-
-	args := make([]interface{}, count)
-	if singular {
-		if object.R == nil {
-			object.R = &userR{}
-		}
-		args[0] = object.CurrentAccountTypeID
-	} else {
-		for i, obj := range slice {
-			if obj.R == nil {
-				obj.R = &userR{}
-			}
-			args[i] = obj.CurrentAccountTypeID
-		}
-	}
-
-	query := fmt.Sprintf(
-		"select * from \"account_types\" where \"id\" in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
-	)
-
-	if boil.DebugMode {
-		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
-	}
-
-	results, err := e.Query(query, args...)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load AccountType")
-	}
-	defer results.Close()
-
-	var resultSlice []*AccountType
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice AccountType")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		object.R.CurrentAccountType = resultSlice[0]
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.CurrentAccountTypeID == foreign.ID {
-				local.R.CurrentAccountType = foreign
-				break
-			}
-		}
-	}
-
-	return nil
 }
 
 // LoadUserAccountTypeHistories allows an eager lookup of values, cached into the
@@ -738,82 +637,6 @@ func (userL) LoadUserVerificationTokens(e boil.Executor, singular bool, maybeUse
 				break
 			}
 		}
-	}
-
-	return nil
-}
-
-// SetCurrentAccountTypeG of the user to the related item.
-// Sets o.R.CurrentAccountType to related.
-// Adds o to related.R.CurrentAccountTypeUsers.
-// Uses the global database handle.
-func (o *User) SetCurrentAccountTypeG(insert bool, related *AccountType) error {
-	return o.SetCurrentAccountType(boil.GetDB(), insert, related)
-}
-
-// SetCurrentAccountTypeP of the user to the related item.
-// Sets o.R.CurrentAccountType to related.
-// Adds o to related.R.CurrentAccountTypeUsers.
-// Panics on error.
-func (o *User) SetCurrentAccountTypeP(exec boil.Executor, insert bool, related *AccountType) {
-	if err := o.SetCurrentAccountType(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCurrentAccountTypeGP of the user to the related item.
-// Sets o.R.CurrentAccountType to related.
-// Adds o to related.R.CurrentAccountTypeUsers.
-// Uses the global database handle and panics on error.
-func (o *User) SetCurrentAccountTypeGP(insert bool, related *AccountType) {
-	if err := o.SetCurrentAccountType(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// SetCurrentAccountType of the user to the related item.
-// Sets o.R.CurrentAccountType to related.
-// Adds o to related.R.CurrentAccountTypeUsers.
-func (o *User) SetCurrentAccountType(exec boil.Executor, insert bool, related *AccountType) error {
-	var err error
-	if insert {
-		if err = related.Insert(exec); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"users\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"current_account_type_id"}),
-		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, updateQuery)
-		fmt.Fprintln(boil.DebugWriter, values)
-	}
-
-	if _, err = exec.Exec(updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.CurrentAccountTypeID = related.ID
-
-	if o.R == nil {
-		o.R = &userR{
-			CurrentAccountType: related,
-		}
-	} else {
-		o.R.CurrentAccountType = related
-	}
-
-	if related.R == nil {
-		related.R = &accountTypeR{
-			CurrentAccountTypeUsers: UserSlice{o},
-		}
-	} else {
-		related.R.CurrentAccountTypeUsers = append(related.R.CurrentAccountTypeUsers, o)
 	}
 
 	return nil

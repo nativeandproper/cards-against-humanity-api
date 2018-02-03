@@ -26,6 +26,7 @@ type UserAccountTypeHistory struct {
 	UserID        int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	AccountTypeID int       `boil:"account_type_id" json:"account_type_id" toml:"account_type_id" yaml:"account_type_id"`
 	CreatedAt     null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	ExpiresAt     null.Time `boil:"expires_at" json:"expires_at,omitempty" toml:"expires_at" yaml:"expires_at,omitempty"`
 
 	R *userAccountTypeHistoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userAccountTypeHistoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,11 +37,13 @@ var UserAccountTypeHistoryColumns = struct {
 	UserID        string
 	AccountTypeID string
 	CreatedAt     string
+	ExpiresAt     string
 }{
 	ID:            "id",
 	UserID:        "user_id",
 	AccountTypeID: "account_type_id",
 	CreatedAt:     "created_at",
+	ExpiresAt:     "expires_at",
 }
 
 // userAccountTypeHistoryR is where relationships are stored.
@@ -53,8 +56,8 @@ type userAccountTypeHistoryR struct {
 type userAccountTypeHistoryL struct{}
 
 var (
-	userAccountTypeHistoryColumns               = []string{"id", "user_id", "account_type_id", "created_at"}
-	userAccountTypeHistoryColumnsWithoutDefault = []string{"user_id", "account_type_id"}
+	userAccountTypeHistoryColumns               = []string{"id", "user_id", "account_type_id", "created_at", "expires_at"}
+	userAccountTypeHistoryColumnsWithoutDefault = []string{"user_id", "account_type_id", "expires_at"}
 	userAccountTypeHistoryColumnsWithDefault    = []string{"id", "created_at"}
 	userAccountTypeHistoryPrimaryKeyColumns     = []string{"id"}
 )

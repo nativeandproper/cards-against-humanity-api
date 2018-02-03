@@ -744,7 +744,7 @@ func testUserAccountTypeHistoriesSelect(t *testing.T) {
 }
 
 var (
-	userAccountTypeHistoryDBTypes = map[string]string{`AccountTypeID`: `integer`, `CreatedAt`: `timestamp without time zone`, `ID`: `integer`, `UserID`: `integer`}
+	userAccountTypeHistoryDBTypes = map[string]string{`AccountTypeID`: `integer`, `CreatedAt`: `timestamp without time zone`, `ExpiresAt`: `timestamp without time zone`, `ID`: `integer`, `UserID`: `integer`}
 	_                             = bytes.MinRead
 )
 
