@@ -15,9 +15,9 @@ func Up00003(tx *sql.Tx) error {
 			id SERIAL PRIMARY KEY, 
 			user_id INTEGER NOT NULL REFERENCES users(id), 
 			token VARCHAR(32) UNIQUE NOT NULL,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-			verified_at TIMESTAMP,
-			expires_at TIMESTAMP NOT NULL
+			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'), 
+			verified_at timestamp without time zone,
+			expires_at timestamp without time zone NOT NULL
 		   )
 		`)
 	if err != nil {

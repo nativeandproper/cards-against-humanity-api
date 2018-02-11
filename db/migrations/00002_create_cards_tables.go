@@ -15,8 +15,8 @@ func Up00002(tx *sql.Tx) error {
 	_, err := tx.Exec(`CREATE TABLE IF NOT EXISTS sets (
 		id SERIAL PRIMARY KEY, 
 		name VARCHAR(50),
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+		updated_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC')
 	   )
 	`)
 	if err != nil {
@@ -29,9 +29,9 @@ func Up00002(tx *sql.Tx) error {
 			text text NOT NULL, 
 			pick INTEGER NOT NULL,
 			set_id  INTEGER NOT NULL REFERENCES sets(id), 
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			deleted_at TIMESTAMP 
+			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			updated_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			deleted_at timestamp without time zone
 		   )
 		`)
 	if err != nil {
@@ -43,9 +43,9 @@ func Up00002(tx *sql.Tx) error {
 		id SERIAL PRIMARY KEY, 
 		text text NOT NULL, 
 		set_id  INTEGER NOT NULL REFERENCES sets(id), 
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP 
+		created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+		updated_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+		deleted_at timestamp without time zone 
 	   )
 	`)
 	if err != nil {
