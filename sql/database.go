@@ -10,7 +10,7 @@ type DatabaseClient struct {
 	logger    zerolog.Logger
 }
 
-// NewDatabaseClient creates a new instance of the databse client
+// NewDatabaseClient creates a new instance of the database client
 func NewDatabaseClient(sqlClient *sql.DB, logger zerolog.Logger) *DatabaseClient {
 	return &DatabaseClient{
 		sqlClient,

@@ -21,7 +21,7 @@ type Server struct {
 	logger   zerolog.Logger
 }
 
-// New creates a new instance of Server w
+// New creates a new instance of Server
 func New(accountClient *accounts.AccountClient, logger zerolog.Logger) *Server {
 	return &Server{
 		accounts: accountClient,

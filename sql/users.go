@@ -2,6 +2,7 @@ package sql
 
 import (
 	"cards-against-humanity-api/models"
+	"github.com/pkg/errors"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
@@ -9,8 +10,7 @@ import (
 func (dc *DatabaseClient) GetUserByEmail(email string) (*models.User, error) {
 	user, err := models.Users(dc.sqlClient, Where("email=?", email)).One()
 	if err != nil {
-		dc.logger.Error().Err(err).Msg("GetUserIDByEmail: error checking if user exists")
-		return nil, err
+		return nil, errors.Wrap(err, "GetUserByEmail: error checking if user exists")
 	}
 
 	return user, nil
@@ -20,8 +20,7 @@ func (dc *DatabaseClient) GetUserByEmail(email string) (*models.User, error) {
 func (dc *DatabaseClient) CheckUserExistsByEmail(email string) (bool, error) {
 	exists, err := models.Users(dc.sqlClient, Where("email=?", email)).Exists()
 	if err != nil {
-		dc.logger.Error().Err(err).Msg("CheckUserExistsByEmail: error checking if user exists")
-		return false, err
+		return false, errors.Wrap(err, "CheckUserExistsByEmail: error checking if user exists")
 	}
 
 	return exists, nil
@@ -37,7 +36,7 @@ func (dc *DatabaseClient) InsertUser(email string, firstName string, lastName st
 
 	err := user.Insert(dc.sqlClient)
 	if err != nil {
-		dc.logger.Error().Err(err).Msg("InsertUser: error inserting user")
+		return errors.Wrap(err, "InsertUser: error inserting user")
 	}
 
 	return nil

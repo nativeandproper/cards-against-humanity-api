@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// postSignupHandler handles requests to the /signup endpoint
+// postSignupHandler handles requests to the POST /user/signup endpoint
 func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	newUser := &accounts.User{}
 
@@ -32,7 +32,7 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 		}
 	}
 
-	// Create and send account verification link to user email
+	// Create and send user verification link to user email
 	user, err := s.accounts.CreateUserVerification(newUser.Email)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("postSignupHandler: Error user verification failed")
@@ -52,7 +52,7 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 	json.NewEncoder(w).Encode(user)
 }
 
-// putSignupHandler handles put requests to the /signup endpoint
+// putSignupHandler handles put requests to the PUT /user/signup endpoint
 func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	payload := &struct {
 		Token string `json:"token"`
