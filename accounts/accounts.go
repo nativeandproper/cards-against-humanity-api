@@ -14,6 +14,10 @@ var (
 	ErrEmailVerificationNotDeliverable = errors.New("Error: A verification email could not be sent to this email")
 	// ErrEmailVerificationNotSent indicates an internal error. Log error internally and ask the user to re-try later
 	ErrEmailVerificationNotSent = errors.New("Error: A verification email could not be sent at this time. Please re-try later")
+	// ErrUserNotFound indicates a user associated with the email verification token could not be found
+	ErrUserNotFound = errors.New("Error: user not found")
+	// ErrUserVerificationTokenHasExpired indicates a user created an account, but did not verify account before token expired
+	ErrUserVerificationTokenHasExpired = errors.New("Error: Verification token has expired")
 )
 
 // User struct defines a new user

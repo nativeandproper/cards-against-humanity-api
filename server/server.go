@@ -53,7 +53,8 @@ func (s *Server) newRouter() *httprouter.Router {
 
 	// Routes
 	router.GET("/status", statusHandler)
-	router.POST("/v1/signup", s.postSignupHandler)
+	router.POST("/v1/user/signup", s.postSignupHandler)
+	router.PUT("/v1/user/signup", s.putSignupHandler)
 
 	return router
 }

@@ -20,7 +20,7 @@ go run cmd/main.go postgres "user={DB_USER_NAME} dbname={DB_NAME} sslmode=disabl
 
 ## HTTP API Reference
 
-### POST `/v1/signup`
+### POST `/v1/user/signup`
 
 Creates a new user.
 
@@ -47,5 +47,32 @@ Creates a new user.
 | ----------- | -------------------------- |
 | 201         | Created                    |
 | 400         | Missing or invalid data    |
-| 409         | User already exists        |
-| 503         | Database not available     |
+| 409         | Email address taken        |
+| 500         | Service is not available (SQL, SendGrid)   |
+
+### PUT `/v1/user/signup`
+
+Verifies the email address associated with a user.
+
+#### Request
+
+```json
+{
+  "verification_token": "7d977f8381d2542e04dcc0d4ce216205",
+}
+```
+
+#### Response
+
+```json
+{
+  "success": "ok"
+}
+```
+
+| Status Code | Description                |
+| ----------- | -------------------------- |
+| 200         | User verified              |
+| 400         | Token Expired              |
+| 400         | User Not Found             |
+| 503         | Service Unavailable        |

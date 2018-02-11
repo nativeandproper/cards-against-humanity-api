@@ -29,10 +29,15 @@ func generateToken() string {
 
 // setTokenExpiration sets the expiration time for a user to verify account with token
 func setTokenExpiration() time.Time {
-	return time.Now().Add(tokenExpirationInHours * time.Hour)
+	return time.Now().UTC().Add(tokenExpirationInHours * time.Hour)
 }
 
-// CreateUserVerification creates and sends users a token to validate new users
+// isExpired returns boolean if a date has passed
+func isExpired(expiredAtDate time.Time) bool {
+	return time.Now().After(expiredAtDate)
+}
+
+// CreateUserVerification creates and sends a user verification to new users
 func (a *AccountClient) CreateUserVerification(email string) (*models.User, error) {
 	// Create token
 	token := generateToken()
@@ -61,6 +66,37 @@ func (a *AccountClient) CreateUserVerification(email string) (*models.User, erro
 	// Remove user password
 	user.Password = make([]byte, 0)
 	return user, nil
+}
+
+// UpdateUserVerification marks a user as verified
+func (a *AccountClient) UpdateUserVerification(token string) error {
+	// Get user verification by token
+	verification, err := a.databaseClient.GetUserVerificationByToken(token)
+	if err != nil {
+		if err.Error() == "Not Found" {
+			return ErrUserNotFound
+		}
+		return errors.Wrap(err, "UpdateUserVerification: Error getting user associated with token")
+	}
+
+	// If token has already been validated
+	if verification.VerifiedAt.Valid == true {
+		return nil
+	}
+
+	// If token as expired, reject
+	isExpired := isExpired(verification.ExpiresAt)
+	if isExpired {
+		return ErrUserVerificationTokenHasExpired
+	}
+
+	// Set email as verified
+	err = a.databaseClient.UpdateUserVerification(verification.ID)
+	if err != nil {
+		return errors.Wrap(err, "UpdateUserVerification: Error updating user as verified")
+	}
+
+	return nil
 }
 
 // ParseEmailTemplate parses the HTML template and associate with user data
