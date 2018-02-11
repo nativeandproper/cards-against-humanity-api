@@ -24,8 +24,8 @@ import (
 type Set struct {
 	ID        int         `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name      null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	CreatedAt null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *setR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L setL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -795,13 +795,11 @@ func (o *Set) Insert(exec boil.Executor, whitelist ...string) error {
 	var err error
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
-	if o.UpdatedAt.Time.IsZero() {
-		o.UpdatedAt.Time = currTime
-		o.UpdatedAt.Valid = true
+	if o.UpdatedAt.IsZero() {
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeInsertHooks(exec); err != nil {
@@ -910,8 +908,7 @@ func (o *Set) UpdateP(exec boil.Executor, whitelist ...string) {
 func (o *Set) Update(exec boil.Executor, whitelist ...string) error {
 	currTime := time.Now().In(boil.GetLocation())
 
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
+	o.UpdatedAt = currTime
 
 	var err error
 	if err = o.doBeforeUpdateHooks(exec); err != nil {
@@ -1076,12 +1073,10 @@ func (o *Set) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns 
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
+	o.UpdatedAt = currTime
 
 	if err := o.doBeforeUpsertHooks(exec); err != nil {
 		return err

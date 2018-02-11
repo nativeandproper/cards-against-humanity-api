@@ -24,7 +24,7 @@ import (
 type APIKey struct {
 	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	APIKey    string    `boil:"api_key" json:"api_key" toml:"api_key" yaml:"api_key"`
-	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	DeletedAt null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *apiKeyR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -612,9 +612,8 @@ func (o *APIKey) Insert(exec boil.Executor, whitelist ...string) error {
 	var err error
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
 
 	if err := o.doBeforeInsertHooks(exec); err != nil {
@@ -884,9 +883,8 @@ func (o *APIKey) Upsert(exec boil.Executor, updateOnConflict bool, conflictColum
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(exec); err != nil {

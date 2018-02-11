@@ -17,7 +17,6 @@ import (
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 	"github.com/volatiletech/sqlboiler/strmangle"
-	"gopkg.in/volatiletech/null.v6"
 )
 
 // UserAccountTypeHistory is an object representing the database table.
@@ -25,8 +24,8 @@ type UserAccountTypeHistory struct {
 	ID            int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID        int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	AccountTypeID int       `boil:"account_type_id" json:"account_type_id" toml:"account_type_id" yaml:"account_type_id"`
-	CreatedAt     null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	ExpiresAt     null.Time `boil:"expires_at" json:"expires_at,omitempty" toml:"expires_at" yaml:"expires_at,omitempty"`
+	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ExpiresAt     time.Time `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
 
 	R *userAccountTypeHistoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userAccountTypeHistoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -778,9 +777,8 @@ func (o *UserAccountTypeHistory) Insert(exec boil.Executor, whitelist ...string)
 	var err error
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
 
 	if err := o.doBeforeInsertHooks(exec); err != nil {
@@ -1050,9 +1048,8 @@ func (o *UserAccountTypeHistory) Upsert(exec boil.Executor, updateOnConflict boo
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(exec); err != nil {

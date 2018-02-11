@@ -26,8 +26,8 @@ type AccountType struct {
 	Type         null.String `boil:"type" json:"type,omitempty" toml:"type" yaml:"type,omitempty"`
 	RequestLimit int         `boil:"request_limit" json:"request_limit" toml:"request_limit" yaml:"request_limit"`
 	APIKeyLimit  int         `boil:"api_key_limit" json:"api_key_limit" toml:"api_key_limit" yaml:"api_key_limit"`
-	CreatedAt    null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt    null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *accountTypeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L accountTypeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -618,13 +618,11 @@ func (o *AccountType) Insert(exec boil.Executor, whitelist ...string) error {
 	var err error
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
-	if o.UpdatedAt.Time.IsZero() {
-		o.UpdatedAt.Time = currTime
-		o.UpdatedAt.Valid = true
+	if o.UpdatedAt.IsZero() {
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeInsertHooks(exec); err != nil {
@@ -733,8 +731,7 @@ func (o *AccountType) UpdateP(exec boil.Executor, whitelist ...string) {
 func (o *AccountType) Update(exec boil.Executor, whitelist ...string) error {
 	currTime := time.Now().In(boil.GetLocation())
 
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
+	o.UpdatedAt = currTime
 
 	var err error
 	if err = o.doBeforeUpdateHooks(exec); err != nil {
@@ -899,12 +896,10 @@ func (o *AccountType) Upsert(exec boil.Executor, updateOnConflict bool, conflict
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
+	o.UpdatedAt = currTime
 
 	if err := o.doBeforeUpsertHooks(exec); err != nil {
 		return err

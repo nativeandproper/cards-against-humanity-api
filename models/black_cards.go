@@ -26,8 +26,8 @@ type BlackCard struct {
 	Text      string    `boil:"text" json:"text" toml:"text" yaml:"text"`
 	Pick      int       `boil:"pick" json:"pick" toml:"pick" yaml:"pick"`
 	SetID     int       `boil:"set_id" json:"set_id" toml:"set_id" yaml:"set_id"`
-	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *blackCardR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -610,13 +610,11 @@ func (o *BlackCard) Insert(exec boil.Executor, whitelist ...string) error {
 	var err error
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
-	if o.UpdatedAt.Time.IsZero() {
-		o.UpdatedAt.Time = currTime
-		o.UpdatedAt.Valid = true
+	if o.UpdatedAt.IsZero() {
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeInsertHooks(exec); err != nil {
@@ -725,8 +723,7 @@ func (o *BlackCard) UpdateP(exec boil.Executor, whitelist ...string) {
 func (o *BlackCard) Update(exec boil.Executor, whitelist ...string) error {
 	currTime := time.Now().In(boil.GetLocation())
 
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
+	o.UpdatedAt = currTime
 
 	var err error
 	if err = o.doBeforeUpdateHooks(exec); err != nil {
@@ -891,12 +888,10 @@ func (o *BlackCard) Upsert(exec boil.Executor, updateOnConflict bool, conflictCo
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
+	o.UpdatedAt = currTime
 
 	if err := o.doBeforeUpsertHooks(exec); err != nil {
 		return err

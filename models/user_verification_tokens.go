@@ -25,7 +25,7 @@ type UserVerificationToken struct {
 	ID         int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID     int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Token      string    `boil:"token" json:"token" toml:"token" yaml:"token"`
-	CreatedAt  null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	VerifiedAt null.Time `boil:"verified_at" json:"verified_at,omitempty" toml:"verified_at" yaml:"verified_at,omitempty"`
 	ExpiresAt  time.Time `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
 
@@ -607,9 +607,8 @@ func (o *UserVerificationToken) Insert(exec boil.Executor, whitelist ...string) 
 	var err error
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
 
 	if err := o.doBeforeInsertHooks(exec); err != nil {
@@ -879,9 +878,8 @@ func (o *UserVerificationToken) Upsert(exec boil.Executor, updateOnConflict bool
 	}
 	currTime := time.Now().In(boil.GetLocation())
 
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
+	if o.CreatedAt.IsZero() {
+		o.CreatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(exec); err != nil {
