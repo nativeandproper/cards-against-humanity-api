@@ -11,37 +11,37 @@ func init() {
 
 func Up00001(tx *sql.Tx) error {
 
+	// create users table
+	_, err := tx.Exec(`CREATE TABLE IF NOT EXISTS users (
+			id SERIAL PRIMARY KEY, 
+			first_name VARCHAR(20) NOT NULL, 
+			last_name VARCHAR(20) NOT NULL,
+			email VARCHAR(40) UNIQUE NOT NULL, 
+			password bytea NOT NULL,
+			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			updated_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			deleted_at timestamp without time zone 
+			)
+		  `)
+	if err != nil {
+		return err
+	}
+
 	// create account types enum
-	_, err := tx.Exec(`CREATE TYPE account_type AS ENUM ('basic', 'admin')`)
+	_, err = tx.Exec(`CREATE TYPE account_type AS ENUM ('basic')`)
 	if err != nil {
 		return err
 	}
 
 	// create account types table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS account_types (
-			id SERIAL PRIMARY KEY, 
-			type account_type DEFAULT 'basic', 
+			id SERIAL PRIMARY KEY,
+			type account_type DEFAULT 'basic',
 			request_limit INTEGER NOT NULL,
-			api_key_limit INTEGER NOT NULL, 
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			api_key_limit INTEGER NOT NULL,
+			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			updated_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC')
 	       )
-		`)
-	if err != nil {
-		return err
-	}
-	// create users table
-	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS users (
-		  id SERIAL PRIMARY KEY, 
-		  current_account_type_id INTEGER NOT NULL REFERENCES account_types(id),
-		  first_name VARCHAR(20) NOT NULL, 
-		  last_name VARCHAR(20) NOT NULL,
-		  email VARCHAR(40) UNIQUE NOT NULL, 
-		  password VARCHAR(26) NOT NULL,
-		  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-		  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-		  deleted_at TIMESTAMP
-	      )
 		`)
 	if err != nil {
 		return err
@@ -49,10 +49,11 @@ func Up00001(tx *sql.Tx) error {
 
 	// create user account type history table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS user_account_type_history (
-			id SERIAL PRIMARY KEY, 
-			user_id INTEGER NOT NULL REFERENCES users(id), 
+			id SERIAL PRIMARY KEY,
+			user_id INTEGER NOT NULL REFERENCES users(id),
 			account_type_id INTEGER NOT NULL REFERENCES account_types(id),
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			expires_at timestamp without time zone NOT NULL
 		   )
 		`)
 	if err != nil {
@@ -61,10 +62,10 @@ func Up00001(tx *sql.Tx) error {
 
 	// create api keys table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS api_keys (
-			id SERIAL PRIMARY KEY, 
+			id SERIAL PRIMARY KEY,
 			api_key VARCHAR(32) UNIQUE NOT NULL,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-			deleted_at TIMESTAMP
+			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+			deleted_at timestamp without time zone 
 	       )
 		`)
 	if err != nil {
@@ -73,8 +74,8 @@ func Up00001(tx *sql.Tx) error {
 
 	// create user api keys table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS user_api_keys (
-		id SERIAL PRIMARY KEY, 
-		user_id INTEGER NOT NULL references users(id), 
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL references users(id),
 		api_key_id INTEGER NOT NULL REFERENCES api_keys(id)
 	   )
 	`)

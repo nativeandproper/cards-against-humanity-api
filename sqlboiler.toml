@@ -1,0 +1,7 @@
+[postgres]
+  dbname="cards_against_humanity"
+  host="localhost"
+  port=5432
+  user=""
+  pass=""
+  sslmode="disable"

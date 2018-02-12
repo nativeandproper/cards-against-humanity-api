@@ -1,9 +1,11 @@
 package server
 
 import (
-	"github.com/gorilla/mux"
-	"log"
+	"cards-against-humanity-api/accounts"
+	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -14,11 +16,17 @@ const (
 )
 
 // Server struct
-type Server struct{}
+type Server struct {
+	accounts *accounts.AccountClient
+	logger   zerolog.Logger
+}
 
 // New creates a new instance of Server
-func New() *Server {
-	return &Server{}
+func New(accountClient *accounts.AccountClient, logger zerolog.Logger) *Server {
+	return &Server{
+		accounts: accountClient,
+		logger:   logger,
+	}
 }
 
 // ListenAndServe creates a new http server instance
@@ -31,26 +39,28 @@ func (s *Server) ListenAndServe(httpAddr string) {
 		Handler:      s.newRouter(),
 	}
 
-	log.Println("Listening ...")
+	s.logger.Info().Msgf("Listening on port %s", strings.Split(httpAddr, ":")[1])
 
 	err := srv.ListenAndServe()
 	if err != nil {
-		log.Println(err)
+		s.logger.Error().Err(err)
 	}
 }
 
-// newRouter returns a mux with routes
-func (s *Server) newRouter() *mux.Router {
-	router := mux.NewRouter()
+// newRouter returns an http router with routes
+func (s *Server) newRouter() *httprouter.Router {
+	router := httprouter.New()
 
 	// Routes
-	router.HandleFunc("/status", statusHandler)
+	router.GET("/status", statusHandler)
+	router.POST("/v1/user/signup", s.postSignupHandler)
+	router.PUT("/v1/user/signup", s.putSignupHandler)
 
 	return router
 }
 
-// statusHandler handles requests to the status endpoint
-func statusHandler(w http.ResponseWriter, r *http.Request) {
+// statusHandler handles requests to the /status endpoint
+func statusHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
