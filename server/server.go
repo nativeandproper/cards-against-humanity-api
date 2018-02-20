@@ -2,6 +2,8 @@ package server
 
 import (
 	"cards-against-humanity-api/accounts"
+	"github.com/gorilla/context"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
 	"net/http"
@@ -13,19 +15,22 @@ const (
 	writeTimeout = time.Second * 15
 	readTimeout  = time.Second * 15
 	idleTimeout  = time.Second * 60
+	sessionToken = "cah-session-token"
 )
 
 // Server struct
 type Server struct {
-	accounts *accounts.AccountClient
-	logger   zerolog.Logger
+	accounts     *accounts.AccountClient
+	logger       zerolog.Logger
+	sessionStore *sessions.CookieStore
 }
 
 // New creates a new instance of Server
-func New(accountClient *accounts.AccountClient, logger zerolog.Logger) *Server {
+func New(accountClient *accounts.AccountClient, sessionStore *sessions.CookieStore, logger zerolog.Logger) *Server {
 	return &Server{
-		accounts: accountClient,
-		logger:   logger,
+		accounts:     accountClient,
+		sessionStore: sessionStore,
+		logger:       logger,
 	}
 }
 
@@ -36,7 +41,7 @@ func (s *Server) ListenAndServe(httpAddr string) {
 		WriteTimeout: writeTimeout,
 		ReadTimeout:  readTimeout,
 		IdleTimeout:  idleTimeout,
-		Handler:      s.newRouter(),
+		Handler:      context.ClearHandler(s.newRouter()),
 	}
 
 	s.logger.Info().Msgf("Listening on port %s", strings.Split(httpAddr, ":")[1])
@@ -55,6 +60,8 @@ func (s *Server) newRouter() *httprouter.Router {
 	router.GET("/status", statusHandler)
 	router.POST("/v1/user/signup", s.postSignupHandler)
 	router.PUT("/v1/user/signup", s.putSignupHandler)
+	router.POST("/v1/user/login", s.postLoginHandler)
+	router.POST("/v1/user/logout", s.postLogoutHandler)
 
 	return router
 }

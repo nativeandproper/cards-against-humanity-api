@@ -14,17 +14,19 @@ var (
 	ErrEmailVerificationNotDeliverable = errors.New("Error: A verification email could not be sent to this email")
 	// ErrEmailVerificationNotSent indicates an internal error. Log error internally and ask the user to re-try later
 	ErrEmailVerificationNotSent = errors.New("Error: A verification email could not be sent at this time. Please re-try later")
-	// ErrUserNotFound indicates a user associated with the email verification token could not be found
+	// ErrUserNotFound indicates user could not be found on lookup
 	ErrUserNotFound = errors.New("Error: user not found")
 	// ErrUserVerificationTokenHasExpired indicates a user created an account, but did not verify account before token expired
 	ErrUserVerificationTokenHasExpired = errors.New("Error: Verification token has expired")
+	// ErrAuthenticationInvalid indicates user email and password combination is invalid
+	ErrAuthenticationInvalid = errors.New("Error: Authentication credentials invalid")
 )
 
 // User struct defines a new user
 type User struct {
 	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
 	Password  string `json:"password"`
 }
 

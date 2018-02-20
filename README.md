@@ -76,3 +76,30 @@ Verifies the email address associated with a user.
 | 400         | Token Expired              |
 | 400         | User Not Found             |
 | 503         | Service Unavailable        |
+
+### POST `/v1/user/login`
+
+Logs the user into a session. 
+
+#### Request
+
+```json
+{
+  "email": "nativeandproper@gmail.com",
+  "password": "meepskeepbeep"
+}
+```
+
+#### Response
+
+```json
+{
+  "token": "da8494j4098973n43kn3n34k433kn34kdkd"
+}
+```
+
+| Status Code | Description                |
+| ----------- | -------------------------- |
+| 201         | User verified              |
+| 400         | User Not Found             |
+| 503         | Service Unavailable        |

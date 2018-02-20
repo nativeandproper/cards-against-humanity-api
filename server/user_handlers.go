@@ -3,7 +3,6 @@ package server
 import (
 	"cards-against-humanity-api/accounts"
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
