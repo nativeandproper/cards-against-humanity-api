@@ -103,3 +103,26 @@ Logs the user into a session.
 | 201         | User verified              |
 | 400         | User Not Found             |
 | 503         | Service Unavailable        |
+
+### POST `/v1/user/:userID/token`
+
+Creates an API token for user. 
+
+#### Request
+
+#### Response
+
+```json
+{
+  "id": 1, 
+  "api_key": "dfdskds60960604098973n43kn3n34k433kn34kdkd",
+  "created_at": "2018-02-09 05:28:34.945929", // UTC timestamp 
+  "deleted_at": null
+}
+```
+
+| Status Code | Description                |
+| ----------- | -------------------------- |
+| 201         | API Token Created          |
+| 400         | User Not Found             |
+| 503         | Service Unavailable        |
