@@ -166,5 +166,39 @@ Deletes an API key for user.
 | Status Code | Description                |
 | ----------- | -------------------------- |
 | 200         | Successful                 |
-| 400         | API Key Not Found          |
+| 404         | API Key Not Found          |
+| 503         | Service Unavailable        |
+
+
+### GET `/v1/user/:userID/apikey`
+
+Retrieves list of API keys associated with user. 
+
+#### Request
+
+#### Response
+
+```json
+{
+  "apiKeys": [
+    {
+    "id": 1, 
+    "api_key": "dfdskds60960604098973n43kn3n34k433kn34kdkd",
+    "created_at": "2018-02-09 05:28:34.945929", 
+    "deleted_at": null
+  },
+  {
+    "id": 2, 
+    "api_key": "vsdadsalaskds6004098973n43kn3n34k4kn34sklsk",
+    "created_at": "2018-03-02 05:28:34.945929", 
+    "deleted_at": "2018-03-11 18:40:51.130696"
+  
+  }]
+}
+```
+
+| Status Code | Description                |
+| ----------- | -------------------------- |
+| 200         | Successful                 |
+| 404         | User Not Found             |
 | 503         | Service Unavailable        |

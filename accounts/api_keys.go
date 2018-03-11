@@ -5,6 +5,20 @@ import (
 	"github.com/pkg/errors"
 )
 
+// DeactivateAPIKey soft deletes an API key for a user
+func (a *AccountClient) DeactivateAPIKey(userID int, keyID int) error {
+	// Soft delete API key
+	err := a.databaseClient.DeleteAPIKey(userID, keyID)
+	if err != nil {
+		if err.Error() == "Not found" {
+			return ErrTokenNotFound
+		}
+		return errors.Wrap(err, "DeactivateAPIKey: Error deactivating API key")
+	}
+
+	return nil
+}
+
 // CreateAPIKey creates an API key for a user
 func (a *AccountClient) CreateAPIKey(userID int) (models.APIKey, error) {
 	// Create API key
@@ -19,16 +33,13 @@ func (a *AccountClient) CreateAPIKey(userID int) (models.APIKey, error) {
 	return APIKey, nil
 }
 
-// DeactivateAPIKey soft deletes an API key for a user
-func (a *AccountClient) DeactivateAPIKey(userID int, keyID int) error {
-	// Soft delete API key
-	err := a.databaseClient.DeleteAPIKey(userID, keyID)
+// ListAPIKeys lists all API keys associated with a user
+func (a *AccountClient) ListAPIKeys(userID int) (models.APIKeySlice, error) {
+	// Retrieve API keys
+	APIKeysList, err := a.databaseClient.GetAPIKeys(userID)
 	if err != nil {
-		if err.Error() == "Not found" {
-			return ErrTokenNotFound
-		}
-		return errors.Wrap(err, "DeactivateAPIKey: Error deactivating API key")
+		return nil, errors.Wrap(err, "ListAPIKeys: Error getting list of API keys")
 	}
 
-	return nil
+	return APIKeysList, nil
 }

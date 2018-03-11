@@ -63,6 +63,7 @@ func (s *Server) newRouter() *httprouter.Router {
 	router.POST("/v1/login", s.postLoginHandler)
 	router.POST("/v1/logout", s.postLogoutHandler)
 
+	router.GET("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.getAPIKeys))
 	router.POST("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.postAPIKey))
 	router.DELETE("/v1/user/:userID/apikey/:apiKey", s.UserAuthenticationRequired(s.deleteAPIKey))
 
