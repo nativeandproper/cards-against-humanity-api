@@ -150,3 +150,21 @@ Creates an API key for user.
 | 201         | API Token Created          |
 | 400         | User Not Found             |
 | 503         | Service Unavailable        |
+
+### DELETE `/v1/user/:userID/apikey/:apiKey`
+
+Deletes an API key for user. 
+
+#### Request
+
+#### Response
+
+```json
+"ok"
+```
+
+| Status Code | Description                |
+| ----------- | -------------------------- |
+| 200         | Successful                 |
+| 400         | API Key Not Found          |
+| 503         | Service Unavailable        |

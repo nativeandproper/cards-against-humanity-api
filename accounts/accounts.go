@@ -16,6 +16,8 @@ var (
 	ErrEmailVerificationNotSent = errors.New("Error: A verification email could not be sent at this time. Please re-try later")
 	// ErrUserNotFound indicates user could not be found on lookup
 	ErrUserNotFound = errors.New("Error: user not found")
+	// ErrTokenNotFound indicates that a token associated with a user cannot be found
+	ErrTokenNotFound = errors.New("Error: An API token of that ID is not associated with user")
 	// ErrUserVerificationTokenHasExpired indicates a user created an account, but did not verify account before token expired
 	ErrUserVerificationTokenHasExpired = errors.New("Error: Verification token has expired")
 	// ErrAuthenticationInvalid indicates user email and password combination is invalid
