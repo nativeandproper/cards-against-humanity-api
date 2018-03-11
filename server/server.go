@@ -58,11 +58,12 @@ func (s *Server) newRouter() *httprouter.Router {
 
 	// Routes
 	router.GET("/status", statusHandler)
-	router.POST("/v1/user/signup", s.postSignupHandler)
-	router.PUT("/v1/user/signup", s.putSignupHandler)
-	router.POST("/v1/user/login", s.postLoginHandler)
-	router.POST("/v1/user/logout", s.postLogoutHandler)
-	router.POST("/v1/apikey", s.postAPIKey)
+	router.POST("/v1/signup", s.postSignupHandler)
+	router.PUT("/v1/signup", s.putSignupHandler)
+	router.POST("/v1/login", s.postLoginHandler)
+	router.POST("/v1/logout", s.postLogoutHandler)
+
+	router.POST("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.postAPIKey))
 
 	return router
 }

@@ -20,7 +20,7 @@ go run cmd/main.go postgres "user={DB_USER_NAME} dbname={DB_NAME} sslmode=disabl
 
 ## HTTP API Reference
 
-### POST `/v1/user/signup`
+### POST `/v1/signup`
 
 Creates a new user.
 
@@ -31,7 +31,6 @@ Creates a new user.
   "email": "nativeandproper@gmail.com",
   "first_name": "Native",
   "last_name": "Proper",
-  "password": "pass123"
 }
 ```
 
@@ -39,7 +38,9 @@ Creates a new user.
 
 ```json
 {
-  "success": "ok"
+  "email": "nativeandproper@gmail.com",
+  "first_name": "Native",
+  "last_name": "Proper",
 }
 ```
 
@@ -50,7 +51,7 @@ Creates a new user.
 | 409         | Email address taken        |
 | 500         | Service is not available (SQL, SendGrid)   |
 
-### PUT `/v1/user/signup`
+### PUT `/v1/signup`
 
 Verifies the email address associated with a user.
 
@@ -77,7 +78,8 @@ Verifies the email address associated with a user.
 | 400         | User Not Found             |
 | 503         | Service Unavailable        |
 
-### POST `/v1/user/login`
+
+### POST `/v1/login`
 
 Logs the user into a session. 
 
@@ -89,24 +91,46 @@ Logs the user into a session.
   "password": "meepskeepbeep"
 }
 ```
-
 #### Response
+Sets token on cookie.
 
 ```json
 {
-  "token": "da8494j4098973n43kn3n34k433kn34kdkd"
+  "success": "ok"
 }
 ```
 
 | Status Code | Description                |
 | ----------- | -------------------------- |
 | 201         | User verified              |
+| 400         | Authentication Invalid     |
 | 400         | User Not Found             |
 | 503         | Service Unavailable        |
 
-### POST `/v1/user/:userID/token`
 
-Creates an API token for user. 
+### POST `/v1/logout`
+
+Logs the user out of a session. 
+
+#### Request
+
+Sets user token as unauthenticated.
+
+```json
+{
+  "success": "ok"
+}
+```
+
+| Status Code | Description                |
+| ----------- | -------------------------- |
+| 200         | Successful                 |
+| 503         | Service Unavailable        |
+
+
+### POST `/v1/user/:userID/apikey`
+
+Creates an API key for user. 
 
 #### Request
 
