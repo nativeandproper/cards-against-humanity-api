@@ -2,10 +2,10 @@ package server
 
 import (
 	"cards-against-humanity-api/accounts"
-	// "encoding/gob"
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -30,7 +30,7 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Authenticate User
-	err := s.accounts.AuthenticateUser(auth.Email, auth.Password)
+	userID, err := s.accounts.AuthenticateUser(auth.Email, auth.Password)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("postLoginHandler: Error authenticating user")
 		switch err {
@@ -46,9 +46,10 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 		}
 	}
 
-	// Create session that expires after 30 minutes of inactivity
+	// Set user as authenticated
+	// Associate auth token to userID
 	session.Values["authenticated"] = true
-	session.Values["user_email"] = auth.Email
+	session.Values["userID"] = userID
 
 	err = session.Save(r, w)
 	if err != nil {
@@ -86,15 +87,30 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		session, _ := s.sessionStore.Get(r, sessionToken)
+		authUserID := session.Values["userID"].(int)
+		paramUserIDStr := ps.ByName("userID")
+
+		// Convert userID param to int
+		paramUserID, err := strconv.Atoi(paramUserIDStr)
+		if err != nil {
+			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
+			return
+		}
+
+		// If the userID in the param does not match the userID in session token
+		if paramUserID != 0 && authUserID != paramUserID {
+			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
+			return
+		}
 
 		// If expiration time has expired or expiration doesn't exist
 		if isAuthenticated, ok := session.Values["authenticated"].(bool); !ok || !isAuthenticated {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
 			return
 		}
 
 		// Save session
-		err := session.Save(r, w)
+		err = session.Save(r, w)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return

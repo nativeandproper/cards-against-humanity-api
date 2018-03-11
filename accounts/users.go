@@ -54,23 +54,23 @@ func (a *AccountClient) CreateUser(user *User) error {
 }
 
 // AuthenticateUser checks if user is valid
-func (a *AccountClient) AuthenticateUser(email, password string) error {
+func (a *AccountClient) AuthenticateUser(email, password string) (int, error) {
 
 	// Get user by email
 	user, err := a.databaseClient.GetUserByEmail(email)
 	if err != nil {
 		if err.Error() == "Not Found" {
-			return ErrUserNotFound
+			return 0, ErrUserNotFound
 		}
-		return err
+		return 0, err
 	}
 
 	// Compare password
 	validPassword := CheckPasswordHash(user.Password, []byte(password))
 
 	if !validPassword {
-		return ErrAuthenticationInvalid
+		return user.ID, ErrAuthenticationInvalid
 	}
 
-	return nil
+	return user.ID, nil
 }

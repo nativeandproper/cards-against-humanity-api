@@ -16,7 +16,6 @@ func (dc *DatabaseClient) GetUserByEmail(email string) (*models.User, error) {
 		}
 		return nil, errors.Wrap(err, "GetUserByEmail: error checking if user exists")
 	}
-
 	return user, nil
 }
 

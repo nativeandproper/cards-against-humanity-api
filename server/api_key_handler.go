@@ -5,16 +5,27 @@ import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"strconv"
 )
 
 func (s *Server) postAPIKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// Check login credentials for user matches the userID on the request
-	userID := 4
+	// Ensure userID param exists
+	userIDStr := ps.ByName("userID")
+	if userIDStr == "" {
+		http.Error(w, "Forbidden: missing expected param", http.StatusForbidden)
+	}
+
+	// Parse userID to int
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("postAPIKey: Error parsing userID to int")
+		http.Error(w, "Forbidden: malformed param", http.StatusForbidden)
+	}
 
 	// Create and store the API key
 	APIKey, err := s.accounts.CreateAPIKey(userID)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("postAPIToken: Error creating API token")
+		s.logger.Error().Err(err).Msg("postAPIKey: Error creating API key")
 		switch err {
 		case accounts.ErrUserNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
