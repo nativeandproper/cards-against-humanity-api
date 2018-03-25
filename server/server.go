@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 	"net/http"
 	"strings"
@@ -36,12 +37,18 @@ func New(accountClient *accounts.AccountClient, sessionStore *sessions.CookieSto
 
 // ListenAndServe creates a new http server instance
 func (s *Server) ListenAndServe(httpAddr string) {
+	// Set cors
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+	})
+
 	srv := &http.Server{
 		Addr:         httpAddr,
 		WriteTimeout: writeTimeout,
 		ReadTimeout:  readTimeout,
 		IdleTimeout:  idleTimeout,
-		Handler:      context.ClearHandler(s.newRouter()),
+		Handler:      c.Handler(context.ClearHandler(s.newRouter())),
 	}
 
 	s.logger.Info().Msgf("Listening on port %s", strings.Split(httpAddr, ":")[1])
