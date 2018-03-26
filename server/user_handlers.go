@@ -80,7 +80,7 @@ func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps htt
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("ok"))
 }

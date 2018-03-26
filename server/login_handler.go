@@ -3,6 +3,7 @@ package server
 import (
 	"cards-against-humanity-api/accounts"
 	"encoding/json"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
@@ -58,8 +59,11 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	fmt.Println("session token:", w)
+	fmt.Println("session values in Middleware:", session.Values)
+
 	// Send session token
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
@@ -78,7 +82,7 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 	}
 
 	// Send back response
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
@@ -87,6 +91,8 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		session, _ := s.sessionStore.Get(r, sessionToken)
+
+		// TODO: handle cases that these values are nil
 		authUserID := session.Values["userID"].(int)
 		paramUserIDStr := ps.ByName("userID")
 
@@ -115,6 +121,7 @@ func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Hand
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+
 		h(w, r, ps)
 	}
 }

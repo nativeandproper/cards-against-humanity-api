@@ -27,8 +27,8 @@ var (
 // User struct defines a new user
 type User struct {
 	Email     string `json:"email"`
-	FirstName string `json:"first_name,omitempty"`
-	LastName  string `json:"last_name,omitempty"`
+	FirstName string `json:"firstName,omitempty"`
+	LastName  string `json:"lastName,omitempty"`
 	Password  string `json:"password"`
 }
 

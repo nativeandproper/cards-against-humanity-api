@@ -79,6 +79,7 @@ func (s *Server) newRouter() *httprouter.Router {
 
 // statusHandler handles requests to the /status endpoint
 func statusHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
