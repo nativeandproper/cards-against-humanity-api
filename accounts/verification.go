@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cards-against-humanity-api/models"
 	"crypto/rand"
+	b64 "encoding/base64"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -12,7 +13,7 @@ import (
 )
 
 const (
-	tokenLength               = 16
+	tokenLength               = 32
 	tokenExpirationInHours    = 24
 	emailPlainTextContent     = "Click the link provided to verify your account!"
 	emailSubject              = "Verify Email for Cards Against Humanity API Access"
@@ -21,10 +22,11 @@ const (
 	emailVerificationTemplate = "./templates/email_verification.html"
 )
 
-func generateToken() string {
+func generateBase64Token() string {
 	tokenBytes := make([]byte, tokenLength)
 	rand.Read(tokenBytes)
-	return fmt.Sprintf("%x", tokenBytes)
+	token := b64.StdEncoding.EncodeToString(tokenBytes)
+	return token
 }
 
 // setTokenExpiration sets the expiration time for a user to verify account with token
@@ -40,7 +42,7 @@ func isExpired(expiredAtDate time.Time) bool {
 // CreateUserVerification creates and sends a user verification to new users
 func (a *AccountClient) CreateUserVerification(email string) (*models.User, error) {
 	// Create token
-	token := generateToken()
+	token := generateBase64Token()
 
 	// Set token expiration
 	expiration := setTokenExpiration()

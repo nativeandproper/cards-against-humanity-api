@@ -2,8 +2,23 @@ package accounts
 
 import (
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 )
+
+const hashCost = 14
+
+// HashPassword hashes a password with salt
+func HashPassword(password string) ([]byte, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), hashCost)
+	return bytes, err
+}
+
+// CheckPasswordHash compares a hashed password with a plain-text password
+func CheckPasswordHash(hash, password []byte) bool {
+	err := bcrypt.CompareHashAndPassword(hash, password)
+	return err == nil
+}
 
 // CreateUser inserts a new user into the database
 func (a *AccountClient) CreateUser(user *User) error {
@@ -36,4 +51,26 @@ func (a *AccountClient) CreateUser(user *User) error {
 	}
 
 	return nil
+}
+
+// AuthenticateUser checks if user is valid
+func (a *AccountClient) AuthenticateUser(email, password string) (int, error) {
+
+	// Get user by email
+	user, err := a.databaseClient.GetUserByEmail(email)
+	if err != nil {
+		if err.Error() == "Not Found" {
+			return 0, ErrUserNotFound
+		}
+		return 0, err
+	}
+
+	// Compare password
+	validPassword := CheckPasswordHash(user.Password, []byte(password))
+
+	if !validPassword {
+		return user.ID, ErrAuthenticationInvalid
+	}
+
+	return user.ID, nil
 }

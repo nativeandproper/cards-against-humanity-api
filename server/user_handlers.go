@@ -3,12 +3,11 @@ package server
 import (
 	"cards-against-humanity-api/accounts"
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-// postSignupHandler handles requests to the POST /user/signup endpoint
+// postSignupHandler handles requests to the POST /signup endpoint
 func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	newUser := &accounts.User{}
 
@@ -52,7 +51,7 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 	json.NewEncoder(w).Encode(user)
 }
 
-// putSignupHandler handles put requests to the PUT /user/signup endpoint
+// putSignupHandler handles put requests to the PUT /signup endpoint
 func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	payload := &struct {
 		Token string `json:"token"`
@@ -81,7 +80,7 @@ func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps htt
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("ok"))
 }
