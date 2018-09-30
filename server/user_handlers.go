@@ -3,6 +3,7 @@ package server
 import (
 	"cards-against-humanity-api/accounts"
 	"encoding/json"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -13,20 +14,41 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 
 	// Decode JSON payload
 	if err := json.NewDecoder(r.Body).Decode(newUser); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("error: could not decode JSON payload %s", err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	if newUser.FirstName == "" || newUser.LastName == "" {
+		http.Error(w, fmt.Sprintf("error: name fields cannot be blank"), http.StatusBadRequest)
+		return
+	}
+
+	min, max := 3, 10
+	if len(newUser.FirstName) < min || len(newUser.FirstName) > max || len(newUser.LastName) < min || len(newUser.LastName) > max {
+		http.Error(w, fmt.Sprintf("error: name fields must be in range of %d to %d characters", min, max), http.StatusBadRequest)
+		return
+	}
+
+	// TODO: validate email address
+	if newUser.Email == "" {
+		http.Error(w, fmt.Sprintf("error: email cannot be empty"), http.StatusBadRequest)
+		return
+	}
+
+	if !accounts.ValidatePassword(newUser.Password) {
+		http.Error(w, fmt.Sprintf("error: password must be between 6-10 characters with one uppercase letter, one number and one special character"), http.StatusBadRequest)
 		return
 	}
 
 	// Create new user
 	err := s.accounts.CreateUser(newUser)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("postSignupHandler: Error create user failed")
 		switch err {
 		case accounts.ErrEmailMustBeUnique:
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error creating account: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
 	}

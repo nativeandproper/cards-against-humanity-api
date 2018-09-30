@@ -41,10 +41,7 @@ func isExpired(expiredAtDate time.Time) bool {
 
 // CreateUserVerification creates and sends a user verification to new users
 func (a *AccountClient) CreateUserVerification(email string) (*models.User, error) {
-	// Create token
 	token := generateBase64Token()
-
-	// Set token expiration
 	expiration := setTokenExpiration()
 
 	// Get UserID By User Email

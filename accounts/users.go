@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
+	"unicode"
 )
 
 const hashCost = 14
@@ -20,6 +21,29 @@ func CheckPasswordHash(hash, password []byte) bool {
 	return err == nil
 }
 
+func ValidatePassword(password string) bool {
+	letters := 0
+	var containsNum, containsUpper, containsSpecial bool
+
+	for _, c := range password {
+		switch {
+		case unicode.IsNumber(c):
+			containsNum = true
+		case unicode.IsUpper(c):
+			containsUpper = true
+			letters++
+		case unicode.IsPunct(c) || unicode.IsSymbol(c):
+			containsSpecial = true
+		case unicode.IsLetter(c) || c == ' ':
+			letters++
+		default:
+			return false
+		}
+	}
+	validLen := letters >= 6 && letters <= 10
+	return containsNum && containsUpper && containsSpecial && validLen
+}
+
 // CreateUser inserts a new user into the database
 func (a *AccountClient) CreateUser(user *User) error {
 
@@ -29,7 +53,7 @@ func (a *AccountClient) CreateUser(user *User) error {
 		return errors.Wrap(err, "CreateUser: Error checking if user exists")
 	}
 
-	// Do not create allow user to be created if email is already taken
+	// Do not allow user to be created if email is already taken
 	if userExists {
 		return ErrEmailMustBeUnique
 	}
