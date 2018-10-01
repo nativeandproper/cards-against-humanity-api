@@ -73,17 +73,19 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 	json.NewEncoder(w).Encode(user)
 }
 
-// putSignupHandler handles put requests to the PUT /signup endpoint
+// putSignupHandler handles put requests to /signup endpoint to verify users email addresses
 func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	payload := &struct {
-		Token string `json:"token"`
+		Token string `json:"verification_token"`
 	}{}
 
 	// Decode JSON payload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("error decoding JSON payload %s", err.Error()), http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println("verification token:", payload.Token)
 
 	// Verify token
 	err := s.accounts.UpdateUserVerification(payload.Token)
