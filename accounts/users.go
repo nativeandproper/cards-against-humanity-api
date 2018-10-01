@@ -21,9 +21,10 @@ func CheckPasswordHash(hash, password []byte) bool {
 	return err == nil
 }
 
+// ValidatePassword ensures a password meets minimum security requirements
 func ValidatePassword(password string) bool {
-	letters := 0
 	var containsNum, containsUpper, containsSpecial bool
+	letters := 0
 
 	for _, c := range password {
 		switch {

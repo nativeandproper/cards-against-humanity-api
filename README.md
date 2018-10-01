@@ -33,7 +33,8 @@ Creates a new user.
 {
   "email": "nativeandproper@gmail.com",
   "first_name": "Native",
-  "last_name": "Proper"
+  "last_name": "Proper",
+  "password": "NatPop123!"
 }
 ```
 
