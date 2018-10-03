@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// postSignupHandler handles requests to the POST /signup endpoint
+// postSignupHandler handles requests for user signup
 func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	newUser := &accounts.User{}
 
@@ -29,7 +29,6 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
-	// TODO: validate email address
 	if newUser.Email == "" {
 		http.Error(w, fmt.Sprintf("error: email cannot be empty"), http.StatusBadRequest)
 		return
@@ -54,7 +53,7 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 	}
 
 	// Create and send user verification link to user email
-	user, err := s.accounts.CreateUserVerification(newUser.Email)
+	user, err := s.accounts.CreateEmailVerification(newUser.Email)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("postSignupHandler: Error user verification failed")
 
@@ -62,47 +61,45 @@ func (s *Server) postSignupHandler(w http.ResponseWriter, r *http.Request, ps ht
 		case accounts.ErrEmailVerificationNotDeliverable:
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error creating email verification: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
 	}
 
-	// Send back user information
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
 }
 
-// putSignupHandler handles put requests to /signup endpoint to verify users email addresses
+// putSignupHandler verifies email address associated with account via token
 func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	payload := &struct {
 		Token string `json:"verification_token"`
 	}{}
 
-	// Decode JSON payload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, fmt.Sprintf("error decoding JSON payload %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
-	// Verify token
-	err := s.accounts.UpdateUserVerification(payload.Token)
+	if payload.Token == "" {
+		http.Error(w, fmt.Sprintf("email verification token can't be empty"), http.StatusBadRequest)
+		return
+	}
+
+	err := s.accounts.UpdateUserVerifyEmail(payload.Token)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("putSignupHandler: Error user verification failed")
 		switch err {
-		case accounts.ErrUserVerificationTokenHasExpired:
+		case accounts.ErrEmailVerificationTokenExpired:
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		case accounts.ErrTokenNotFound:
-			http.Error(w, fmt.Sprintf("Verification %s", err.Error()), http.StatusNotFound)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("ok"))
 }

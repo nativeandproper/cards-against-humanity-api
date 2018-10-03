@@ -8,55 +8,54 @@ import (
 	"time"
 )
 
-// InsertUserVerification associates a verification token with a user
-func (dc *DatabaseClient) InsertUserVerification(userID int, token string, expiration time.Time) error {
+// InsertEmailVerification associates a verification token with a user
+func (dc *DatabaseClient) InsertEmailVerification(userID int, token string, expiration time.Time) error {
 
-	var userVerification models.UserVerificationToken
-	userVerification.UserID = userID
-	userVerification.Token = token
-	userVerification.ExpiresAt = expiration
+	var emailVerification models.UserVerificationToken
+	emailVerification.UserID = userID
+	emailVerification.Token = token
+	emailVerification.ExpiresAt = expiration
 
-	// Insert user verification
-	err := userVerification.Insert(dc.sqlClient)
+	// Insert email verification
+	err := emailVerification.Insert(dc.sqlClient)
 	if err != nil {
-		return errors.Wrap(err, "InsertUserVerification: Error inserting row for email verification")
+		return errors.Wrap(err, "InsertEmailVerification: Error inserting row")
 	}
 
 	return nil
 }
 
-// GetUserVerificationByToken retrieves user verification by token
-func (dc *DatabaseClient) GetUserVerificationByToken(token string) (*models.UserVerificationToken, error) {
+// GetEmailVerificationToken retrieves email verification by token
+func (dc *DatabaseClient) GetEmailVerificationToken(token string) (*models.UserVerificationToken, error) {
 
-	// Get user verification by token
-	userVerification, err := models.UserVerificationTokens(dc.sqlClient, Select("id", "expires_at", "verified_at"), Where("token=?", token)).One()
+	// Get email verification by token
+	emailVerification, err := models.UserVerificationTokens(dc.sqlClient, Select("id", "expires_at", "verified_at"), Where("token=?", token)).One()
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, errors.Wrap(err, "GetUserVerificationByToken: Error retrieving row for user verification")
+		return nil, errors.Wrap(err, "GetEmailVerificationToken: Error retrieving email verification")
 	}
 
-	return userVerification, nil
+	return emailVerification, nil
 }
 
-// UpdateUserVerification sets a user as verified
-func (dc *DatabaseClient) UpdateUserVerification(ID int) error {
+// UpdateEmailVerification sets user as verified
+func (dc *DatabaseClient) UpdateEmailVerification(ID int) error {
 
-	// Get user verification by ID
-	userVerification, err := models.FindUserVerificationToken(dc.sqlClient, ID)
+	// get email verification by ID
+	emailVerification, err := models.FindUserVerificationToken(dc.sqlClient, ID)
 	if err != nil {
-		return errors.Wrap(err, "UpdateUserVerification: Error retrieving user")
+		return errors.Wrap(err, "UpdateEmailVerification: Error retrieving email verification")
 	}
 
-	// Set verifiedAt column to current time
-	userVerification.VerifiedAt.Time = time.Now().UTC()
-	userVerification.VerifiedAt.Valid = true
+	// set verifiedAt to current time
+	emailVerification.VerifiedAt.Time = time.Now().UTC()
+	emailVerification.VerifiedAt.Valid = true
 
-	// Update user verification
-	err = userVerification.Update(dc.sqlClient)
+	err = emailVerification.Update(dc.sqlClient)
 	if err != nil {
-		return errors.Wrap(err, "UpdateUserVerification: Error updating user as verified")
+		return errors.Wrap(err, "UpdateEmailVerification: Error updating email as verified")
 	}
 
 	return nil

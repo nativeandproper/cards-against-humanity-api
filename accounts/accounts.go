@@ -18,8 +18,8 @@ var (
 	ErrUserNotFound = errors.New("Error: user not found")
 	// ErrTokenNotFound indicates that token cannot be found
 	ErrTokenNotFound = errors.New("Error: token cannot be found")
-	// ErrUserVerificationTokenHasExpired indicates a user created an account, but did not verify account before token expired
-	ErrUserVerificationTokenHasExpired = errors.New("Error: Verification token has expired")
+	// ErrEmailVerificationTokenExpired indicates a user created an account, but did not verify account before token expired
+	ErrEmailVerificationTokenExpired = errors.New("Error: Email verification token has expired")
 	// ErrAuthenticationInvalid indicates user email and password combination is invalid
 	ErrAuthenticationInvalid = errors.New("Error: Authentication credentials invalid")
 )

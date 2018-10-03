@@ -51,65 +51,64 @@ func setTokenExpiration() time.Time {
 	return time.Now().UTC().Add(tokenExpirationInHours * time.Hour)
 }
 
-// isExpired returns boolean if a date has passed
+// isExpired returns boolean if date is passed current date
 func isExpired(expiredAtDate time.Time) bool {
 	return time.Now().After(expiredAtDate)
 }
 
-// CreateUserVerification creates and sends a user verification to new users
-func (a *AccountClient) CreateUserVerification(email string) (*models.User, error) {
+// CreateEmailVerification creates and sends an email verification to new users
+func (a *AccountClient) CreateEmailVerification(email string) (*models.User, error) {
 	token := generateBase64Token()
 	expiration := setTokenExpiration()
 
-	// Get UserID By User Email
 	user, err := a.databaseClient.GetUserByEmail(email)
 	if err != nil {
-		return nil, errors.Wrap(err, "CreateUserVerification: Error getting user by email")
+		return nil, errors.Wrap(err, "CreateEmailVerification: Error getting user by email")
 	}
 
 	// Store user and token association
-	err = a.databaseClient.InsertUserVerification(user.ID, token, expiration)
+	err = a.databaseClient.InsertEmailVerification(user.ID, token, expiration)
 	if err != nil {
-		return nil, errors.Wrap(err, "CreateUserVerification: Error setting verification token")
+		return nil, errors.Wrap(err, "CreateEmailVerification: Error setting token")
 	}
 
-	// Send verification link to user
-	err = a.SendUserEmailVerification(user.FirstName, user.Email, token)
+	// send verification email to user
+	err = a.SendEmailVerification(user.FirstName, user.Email, token)
 	if err != nil {
 		return nil, err
 	}
 
-	// Remove user password
+	// Remove password
 	user.Password = make([]byte, 0)
 	return user, nil
 }
 
-// UpdateUserVerification marks a user as verified
-func (a *AccountClient) UpdateUserVerification(token string) error {
-	// Get user verification by token
-	verification, err := a.databaseClient.GetUserVerificationByToken(token)
+// UpdateUserVerifyEmail confirms email associated with user account
+func (a *AccountClient) UpdateUserVerifyEmail(token string) error {
+	// get verification by token
+	emailVerification, err := a.databaseClient.GetEmailVerificationToken(token)
 	if err != nil {
-		return errors.Wrap(err, "UpdateUserVerification: Error getting user associated with token")
+		return errors.Wrap(err, "UpdateUserVerifyEmail: Error getting user associated with token")
 	}
-	if verification == nil {
+	if emailVerification == nil {
 		return ErrTokenNotFound
 	}
 
-	// If token has already been validated
-	if verification.VerifiedAt.Valid == true {
+	// already validated
+	if emailVerification.VerifiedAt.Valid == true {
 		return nil
 	}
 
-	// If token as expired, reject
-	isExpired := isExpired(verification.ExpiresAt)
+	// has expired
+	isExpired := isExpired(emailVerification.ExpiresAt)
 	if isExpired {
-		return ErrUserVerificationTokenHasExpired
+		return ErrEmailVerificationTokenExpired
 	}
 
-	// Set email as verified
-	err = a.databaseClient.UpdateUserVerification(verification.ID)
+	// set email as verified
+	err = a.databaseClient.UpdateEmailVerification(emailVerification.ID)
 	if err != nil {
-		return errors.Wrap(err, "UpdateUserVerification: Error updating user as verified")
+		return errors.Wrap(err, "UpdateUserVerifyEmail: Error updating email as verified")
 	}
 
 	return nil
@@ -131,8 +130,8 @@ func (a *AccountClient) ParseEmailTemplate(templateFileName string, data interfa
 	return templateString, nil
 }
 
-// SendUserEmailVerification sends verification token to users email
-func (a *AccountClient) SendUserEmailVerification(name string, email string, userToken string) error {
+// SendEmailVerification sends verification email to email address associated with user's account
+func (a *AccountClient) SendEmailVerification(name string, email string, userToken string) error {
 	// Format email
 	from := mail.NewEmail(adminName, adminEmailAddress)
 	to := mail.NewEmail(name, email)
@@ -170,7 +169,7 @@ func (a *AccountClient) SendUserEmailVerification(name string, email string, use
 	case 404:
 		return ErrEmailVerificationNotDeliverable
 	default:
-		a.logger.Error().Err(err).Msg("SendUserEmailVerification: Error sending email verification")
+		a.logger.Error().Err(err).Msg("SendEmailVerification: Error sending email verification")
 		return ErrEmailVerificationNotSent
 	}
 
