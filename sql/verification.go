@@ -16,7 +16,7 @@ func (dc *DatabaseClient) InsertEmailVerification(userID int, token string, expi
 	emailVerification.Token = token
 	emailVerification.ExpiresAt = expiration
 
-	// Insert email verification
+	// insert email verification
 	err := emailVerification.Insert(dc.sqlClient)
 	if err != nil {
 		return errors.Wrap(err, "InsertEmailVerification: Error inserting row")
@@ -28,7 +28,7 @@ func (dc *DatabaseClient) InsertEmailVerification(userID int, token string, expi
 // GetEmailVerificationToken retrieves email verification by token
 func (dc *DatabaseClient) GetEmailVerificationToken(token string) (*models.UserVerificationToken, error) {
 
-	// Get email verification by token
+	// get email verification by token
 	emailVerification, err := models.UserVerificationTokens(dc.sqlClient, Select("id", "expires_at", "verified_at"), Where("token=?", token)).One()
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -48,29 +48,23 @@ func ValidatePassword(password string) bool {
 // CreateUser inserts a new user into the database
 func (a *AccountClient) CreateUser(user *User) error {
 
-	// Check if user with that email already exists
 	userExists, err := a.databaseClient.CheckUserExistsByEmail(user.Email)
 	if err != nil {
 		return errors.Wrap(err, "CreateUser: Error checking if user exists")
 	}
 
-	// Do not allow user to be created if email is already taken
+	// err email already taken
 	if userExists {
 		return ErrEmailMustBeUnique
 	}
 
-	// Hash password
+	// hash password
 	hash, err := HashPassword(user.Password)
 	if err != nil {
 		return errors.Wrap(err, "CreateUser: Error could not hash password")
 	}
 
-	// Capitalize first letter of names
-	firstName := strings.Title(user.FirstName)
-	lastName := strings.Title(user.LastName)
-
-	// Insert new user
-	err = a.databaseClient.InsertUser(user.Email, firstName, lastName, hash)
+	err = a.databaseClient.InsertUser(user.Email, strings.Title(user.FirstName), strings.Title(user.LastName), hash)
 	if err != nil {
 		return errors.Wrap(err, "CreateUser: Error inserting user")
 	}
@@ -78,19 +72,19 @@ func (a *AccountClient) CreateUser(user *User) error {
 	return nil
 }
 
-// AuthenticateUser checks if user is valid
+// AuthenticateUser checks if valid user
 func (a *AccountClient) AuthenticateUser(email, password string) (int, error) {
 
-	// Get user by email
+	// get user
 	user, err := a.databaseClient.GetUserByEmail(email)
 	if err != nil {
-		if err.Error() == "Not Found" {
-			return 0, ErrUserNotFound
-		}
 		return 0, err
 	}
+	if user == nil {
+		return 0, ErrUserNotFound
+	}
 
-	// Compare password
+	// compare password
 	validPassword := CheckPasswordHash(user.Password, []byte(password))
 
 	if !validPassword {
