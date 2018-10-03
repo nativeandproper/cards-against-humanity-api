@@ -28,8 +28,7 @@ func generateBase64Token() string {
 	rand.Read(tokenBytes)
 	// remove slashes as verification code will be read as url param
 	removeCharByte(tokenBytes, byte(63))
-	token := b64.StdEncoding.EncodeToString(tokenBytes)
-	return token
+	return b64.StdEncoding.EncodeToString(tokenBytes)
 }
 
 func randomInt(min int, max int) int {
@@ -66,7 +65,7 @@ func (a *AccountClient) CreateEmailVerification(email string) (*models.User, err
 		return nil, errors.Wrap(err, "CreateEmailVerification: Error getting user by email")
 	}
 
-	// Store user and token association
+	// store email verification
 	err = a.databaseClient.InsertEmailVerification(user.ID, token, expiration)
 	if err != nil {
 		return nil, errors.Wrap(err, "CreateEmailVerification: Error setting token")
@@ -78,7 +77,7 @@ func (a *AccountClient) CreateEmailVerification(email string) (*models.User, err
 		return nil, err
 	}
 
-	// Remove password
+	// remove password
 	user.Password = make([]byte, 0)
 	return user, nil
 }
@@ -132,12 +131,11 @@ func (a *AccountClient) ParseEmailTemplate(templateFileName string, data interfa
 
 // SendEmailVerification sends verification email to email address associated with user's account
 func (a *AccountClient) SendEmailVerification(name string, email string, userToken string) error {
-	// Format email
 	from := mail.NewEmail(adminName, adminEmailAddress)
 	to := mail.NewEmail(name, email)
 	verificationLink := fmt.Sprintf("%s/%s", a.accountVerificationURL, userToken)
 
-	// Render template data
+	// render template data
 	templateData := struct {
 		Name             string
 		VerificationLink string
@@ -146,22 +144,21 @@ func (a *AccountClient) SendEmailVerification(name string, email string, userTok
 		VerificationLink: verificationLink,
 	}
 
-	// Associate template data with template
+	// associate template data with template
 	htmlContent, err := a.ParseEmailTemplate(emailVerificationTemplate, templateData)
 	if err != nil {
 		return err
 	}
 
-	// Create message
+	// create message
 	message := mail.NewSingleEmail(from, emailSubject, to, emailPlainTextContent, htmlContent)
 
-	// Send email
+	// send email
 	response, err := a.mailClient.Send(message)
 	if err != nil {
 		return err
 	}
 
-	// Return value based on email verification status
 	switch response.StatusCode {
 	case 200:
 	case 202:
