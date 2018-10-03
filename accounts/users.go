@@ -75,7 +75,6 @@ func (a *AccountClient) CreateUser(user *User) error {
 // AuthenticateUser checks if valid user
 func (a *AccountClient) AuthenticateUser(email, password string) (int, error) {
 
-	// get user
 	user, err := a.databaseClient.GetUserByEmail(email)
 	if err != nil {
 		return 0, err
@@ -86,7 +85,6 @@ func (a *AccountClient) AuthenticateUser(email, password string) (int, error) {
 
 	// compare password
 	validPassword := CheckPasswordHash(user.Password, []byte(password))
-
 	if !validPassword {
 		return user.ID, ErrAuthenticationInvalid
 	}

@@ -16,21 +16,29 @@ func setSessionExpirationTime() time.Time {
 
 // postLoginHandler authenticates a user and creates a session
 func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	session, _ := s.sessionStore.Get(r, sessionToken)
+	session, err := s.sessionStore.Get(r, sessionToken)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("postLogoutHandler: Error retrieving authentication session")
+		http.Error(w, "error authenticating", http.StatusInternalServerError)
+		return
+	}
 
 	auth := struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}{}
 
-	// Decode JSON payload
 	if err := json.NewDecoder(r.Body).Decode(&auth); err != nil {
-		s.logger.Error().Err(err).Msg("postLoginHandler: Error decoding json")
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("error decoding JSON: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
-	// Authenticate User
+	if auth.Email == "" || auth.Password == "" {
+		http.Error(w, "email and password cannot be blank", http.StatusBadRequest)
+		return
+	}
+
+	// authenticate User
 	userID, err := s.accounts.AuthenticateUser(auth.Email, auth.Password)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("postLoginHandler: Error authenticating user")
@@ -42,13 +50,12 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
 			return
 		}
 	}
 
-	// Set user as authenticated
-	// Associate auth token to userID
+	// set auth values on session
 	session.Values["authenticated"] = true
 	session.Values["userID"] = userID
 
@@ -59,10 +66,9 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	fmt.Println("session token:", w)
-	fmt.Println("session values in Middleware:", session.Values)
+	fmt.Println(w, "Is Login session new? %b", session.IsNew)
+	fmt.Println(w, "Cookie set to after login %v", session.Values)
 
-	// Send session token
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
@@ -70,16 +76,28 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 
 // postLogoutHandler logs out a user from a session
 func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	session, _ := s.sessionStore.Get(r, sessionToken)
+	session, err := s.sessionStore.Get(r, sessionToken)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("postLogoutHandler: Error retrieving authentication session")
+		http.Error(w, "error authenticating", http.StatusInternalServerError)
+		return
+	}
 
-	// Invalidate session
-	session.Values["autenticated"] = false
+	fmt.Println(w, "Is Logout session new? %b", session.IsNew)
+
+	// expire session
+	session.Options.MaxAge = -1
+	session.Values["authenticated"] = false
 
 	// Save session
-	err := session.Save(r, w)
+	err = session.Save(r, w)
 	if err != nil {
+		s.logger.Error().Err(err).Msg("postLogoutHandler: Error saving session")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
+
+	fmt.Println(w, "Cookie set to %v on LOGOUT", session.Values)
 
 	// Send back response
 	w.Header().Set("Content-Type", "text/plain")
@@ -90,34 +108,47 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 // UserAuthenticationRequired is authentication middleware for user requests
 func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		session, _ := s.sessionStore.Get(r, sessionToken)
+		session, err := s.sessionStore.Get(r, sessionToken)
+		if err != nil {
+			s.logger.Error().Err(err).Msg("UserAuthenticationRequired: Error retrieving authentication session")
+			http.Error(w, "error authenticating", http.StatusInternalServerError)
+			return
+		}
 
-		// TODO: handle cases that these values are nil
-		authUserID := session.Values["userID"].(int)
-		paramUserIDStr := ps.ByName("userID")
+		fmt.Println(w, "Is middleware session new? %b", session.IsNew)
 
-		// Convert userID param to int
-		paramUserID, err := strconv.Atoi(paramUserIDStr)
+		fmt.Println("session values in middleware before:", session.Values)
+
+		sessionUserID := session.Values["userID"]
+		if sessionUserID == nil {
+			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
+			return
+		}
+
+		paramUserID, err := strconv.Atoi(ps.ByName("userID"))
 		if err != nil {
 			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
 			return
 		}
 
-		// If the userID in the param does not match the userID in session token
-		if paramUserID != 0 && authUserID != paramUserID {
+		// userID param does not match userID in session token
+		if paramUserID != 0 && sessionUserID.(int) != paramUserID {
 			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
 			return
 		}
 
-		// If expiration time has expired or expiration doesn't exist
+		// expiration time has expired or doesn't exist
 		if isAuthenticated, ok := session.Values["authenticated"].(bool); !ok || !isAuthenticated {
 			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
 			return
 		}
 
+		fmt.Println("session values in middleware after:", session.Values)
+
 		// Save session
 		err = session.Save(r, w)
 		if err != nil {
+			s.logger.Error().Err(err).Msg("postLogoutHandler: Error saving session in middleware")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

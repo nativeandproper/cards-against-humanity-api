@@ -41,7 +41,6 @@ func (s *Server) ListenAndServe(httpAddr string) {
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "PUT", "POST"},
 		AllowCredentials: true,
-		Debug:            true,
 	})
 
 	srv := &http.Server{
@@ -69,7 +68,7 @@ func (s *Server) newRouter() *httprouter.Router {
 	router.GET("/status", statusHandler)
 	router.POST("/v1/signup", s.postSignupHandler)
 	router.POST("/v1/login", s.postLoginHandler)
-	router.POST("/v1/logout", s.postLogoutHandler)
+	router.POST("/v1/logout", s.UserAuthenticationRequired(s.postLogoutHandler))
 
 	router.GET("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.getAPIKeys))
 	router.POST("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.postAPIKey))
