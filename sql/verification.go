@@ -32,7 +32,7 @@ func (dc *DatabaseClient) GetUserVerificationByToken(token string) (*models.User
 	userVerification, err := models.UserVerificationTokens(dc.sqlClient, Select("id", "expires_at", "verified_at"), Where("token=?", token)).One()
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("Not Found")
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "GetUserVerificationByToken: Error retrieving row for user verification")
 	}

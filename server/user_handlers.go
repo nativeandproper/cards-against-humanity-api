@@ -85,8 +85,6 @@ func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	fmt.Println("verification token:", payload.Token)
-
 	// Verify token
 	err := s.accounts.UpdateUserVerification(payload.Token)
 	if err != nil {
@@ -95,8 +93,8 @@ func (s *Server) putSignupHandler(w http.ResponseWriter, r *http.Request, ps htt
 		case accounts.ErrUserVerificationTokenHasExpired:
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
-		case accounts.ErrUserNotFound:
-			http.Error(w, err.Error(), http.StatusNotFound)
+		case accounts.ErrTokenNotFound:
+			http.Error(w, fmt.Sprintf("Verification %s", err.Error()), http.StatusNotFound)
 			return
 		default:
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

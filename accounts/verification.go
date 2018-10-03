@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"html/template"
+	mRand "math/rand"
 	"time"
 )
 
@@ -25,8 +26,24 @@ const (
 func generateBase64Token() string {
 	tokenBytes := make([]byte, tokenLength)
 	rand.Read(tokenBytes)
+	// remove slashes as verification code will be read as url param
+	removeCharByte(tokenBytes, byte(63))
 	token := b64.StdEncoding.EncodeToString(tokenBytes)
 	return token
+}
+
+func randomInt(min int, max int) int {
+	r := mRand.New(mRand.NewSource(time.Now().UnixNano()))
+	p := r.Perm(max - min + 1)
+	return p[min]
+}
+
+func removeCharByte(bytesArr []byte, charCode byte) {
+	for i, b := range bytesArr {
+		if b == charCode {
+			bytesArr[i] = byte(randomInt(0, 62))
+		}
+	}
 }
 
 // setTokenExpiration sets the expiration time for a user to verify account with token
@@ -72,10 +89,10 @@ func (a *AccountClient) UpdateUserVerification(token string) error {
 	// Get user verification by token
 	verification, err := a.databaseClient.GetUserVerificationByToken(token)
 	if err != nil {
-		if err.Error() == "Not Found" {
-			return ErrUserNotFound
-		}
 		return errors.Wrap(err, "UpdateUserVerification: Error getting user associated with token")
+	}
+	if verification == nil {
+		return ErrTokenNotFound
 	}
 
 	// If token has already been validated
