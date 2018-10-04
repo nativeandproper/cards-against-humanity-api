@@ -8,89 +8,85 @@ import (
 	"time"
 )
 
-// DeleteAPIKey soft deletes an API Key associated with a user
-func (dc *DatabaseClient) DeleteAPIKey(userID int, keyID int) error {
-
-	// Verify API token is associated with user
-	exists, err := models.UserAPIKeys(dc.sqlClient, Where("user_id=?", userID), Where("api_key_id=?", keyID)).Exists()
+// DeleteAPIKey expires an API Key associated with a user
+func (dc *DatabaseClient) DeleteAPIKey(userID int, userAPIKeyID int) (bool, error) {
+	// verify API token is associated with user
+	userAPIKey, err := models.FindUserAPIKey(dc.sqlClient, userAPIKeyID)
 	if err != nil {
-		return errors.Wrap(err, "DeleteAPIKey: error retrieving user API key")
+		return false, errors.Wrap(err, "DeleteAPIKey: Error retrieving user API key")
+	}
+	if userAPIKey == nil {
+		return false, nil
 	}
 
-	// If user does not have an API token with keyID associated with account
-	if !exists {
-		return errors.New("Not found")
-	}
-
-	// Get API key
-	APIKey, err := models.FindAPIKey(dc.sqlClient, keyID)
+	apiKey, err := models.FindAPIKey(dc.sqlClient, userAPIKey.APIKeyID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.New("Not Found")
+			return false, nil
 		}
-		return errors.Wrap(err, "DeleteAPIKey: error retrieving API key")
+		return false, errors.Wrap(err, "DeleteAPIKey: Error retrieving API key")
 	}
 
-	// Set DeletedAt timestamp
-	APIKey.DeletedAt.Time = time.Now().UTC()
-	APIKey.DeletedAt.Valid = true
+	// set DeletedAt timestamp
+	apiKey.DeletedAt.Time = time.Now().UTC()
+	apiKey.DeletedAt.Valid = true
 
-	// Insert API key and return
-	err = APIKey.Update(dc.sqlClient)
+	// update expiration
+	err = apiKey.Update(dc.sqlClient)
 	if err != nil {
-		return errors.Wrap(err, "DeleteAPIKey: error deleting API Key")
+		return false, errors.Wrap(err, "DeleteAPIKey: Error deleting API Key")
 	}
 
-	return nil
+	return true, nil
 }
 
 // InsertAPIKey inserts an API Key for a valid user
-func (dc *DatabaseClient) InsertAPIKey(userID int, token string) (models.APIKey, error) {
+func (dc *DatabaseClient) InsertAPIKey(userID int, token string) (*models.APIKey, error) {
 	var UserAPIKey models.UserAPIKey
-	var APIKey models.APIKey
+	var apiKey models.APIKey
 
-	// Create transaction
 	tx, err := dc.sqlClient.Begin()
 	if err != nil {
-		return APIKey, err
+		return nil, err
 	}
 
-	// Set API key values
-	APIKey.APIKey = token
+	// set API token
+	apiKey.APIKey = token
 
-	// Insert API key and return
-	err = APIKey.Insert(tx)
+	// insert API key
+	err = apiKey.Insert(tx)
 	if err != nil {
-		tx.Rollback()
-		return APIKey, errors.Wrap(err, "InsertAPIKey: error inserting API Key")
+		if err := tx.Rollback(); err != nil {
+			dc.logger.Error().Err(err).Msg("InsertAPIKey: Error rolling back transaction")
+		}
+		return nil, errors.Wrap(err, "InsertAPIKey: Error inserting API Key")
 	}
 
-	// Inser user API key values
-	UserAPIKey.APIKeyID = APIKey.ID
+	// insert user API key values
+	UserAPIKey.APIKeyID = apiKey.ID
 	UserAPIKey.UserID = userID
 
 	err = UserAPIKey.Insert(tx)
 	if err != nil {
-		tx.Rollback()
-		return APIKey, errors.Wrap(err, "InsertAPIKey: error inserting User API Key")
+		if err := tx.Rollback(); err != nil {
+			dc.logger.Error().Err(err).Msg("InsertAPIKey: Error rolling back transaction")
+		}
+		return nil, errors.Wrap(err, "InsertAPIKey: Error inserting User API Key")
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return nil, errors.Wrap(err, "InsertAPIKey: Error committing transaction")
+	}
 
-	return APIKey, nil
+	return &apiKey, nil
 }
 
 // GetAPIKeys gets list of all API Keys associated with user
 func (dc *DatabaseClient) GetAPIKeys(userID int) (models.APIKeySlice, error) {
-	// Get API keys where the user_id matches userID
-	APIKeys, err := models.APIKeys(dc.sqlClient,
+	return models.APIKeys(dc.sqlClient,
 		Select("*"),
 		InnerJoin("user_api_keys uak on uak.api_key_id = api_keys.id"),
 		Where("uak.user_id= ?", userID),
 	).All()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetAPIKeys: error inserting API keys")
-	}
-
-	return APIKeys, nil
 }

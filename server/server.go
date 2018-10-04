@@ -39,7 +39,7 @@ func New(accountClient *accounts.AccountClient, sessionStore *sessions.CookieSto
 func (s *Server) ListenAndServe(httpAddr string) {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "PUT", "POST"},
+		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE"},
 		AllowCredentials: true,
 	})
 
