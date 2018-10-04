@@ -12,7 +12,7 @@ func (dc *DatabaseClient) GetUserByEmail(email string) (*models.User, error) {
 	user, err := models.Users(dc.sqlClient, Where("email=?", email)).One()
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("Not Found")
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "GetUserByEmail: error checking if user exists")
 	}

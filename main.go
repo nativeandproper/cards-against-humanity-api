@@ -16,21 +16,21 @@ const sessionExpiration = 86400 * 1
 func main() {
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	// URL for account verification
-	accountVerificationURL := getEnvOrPanic("CAH_VERIFICATION_URL")
+	// url for email verification
+	emailVerificationURL := getEnvOrPanic("CAH_VERIFICATION_URL")
 
-	// Create SendGrid client
+	// sendGrid client
 	sendGridAPIToken := getEnvOrPanic("CAH_SENDGRID_API_TOKEN")
 	mailClient := sendgrid.NewSendClient(sendGridAPIToken)
 
-	// Create store and set session options
+	// create store and set session options
 	sessionStore := sessions.NewCookieStore([]byte(getEnvOrPanic("CAH_SESSION_SECRET")))
 	sessionStore.Options = &sessions.Options{
 		MaxAge:   sessionExpiration,
 		HttpOnly: true,
 	}
 
-	// Connect to database
+	// connect to database
 	sqlClient, err := sql.NewSQLClient(getEnvOrPanic("CAH_DATABASE_ADDRESS"))
 	if err != nil {
 		logger.Fatal().
@@ -39,13 +39,9 @@ func main() {
 	}
 	defer sqlClient.Close()
 
-	// Create database client
 	databaseClient := sql.NewDatabaseClient(sqlClient, logger)
+	accountClient := accounts.NewAccountClient(databaseClient, logger, mailClient, emailVerificationURL)
 
-	// Create user account client
-	accountClient := accounts.NewAccountClient(databaseClient, logger, mailClient, accountVerificationURL)
-
-	// Start HTTP server
 	srv := server.New(accountClient, sessionStore, logger)
 	srv.ListenAndServe(httpAddr)
 }

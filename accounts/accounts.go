@@ -9,17 +9,17 @@ import (
 
 var (
 	// ErrEmailMustBeUnique indicates an email is already taken
-	ErrEmailMustBeUnique = errors.New("Error: A user with this email address already exists")
+	ErrEmailMustBeUnique = errors.New("Error: email address not available")
 	// ErrEmailVerificationNotDeliverable indicates the user provided an unreachable email address
-	ErrEmailVerificationNotDeliverable = errors.New("Error: A verification email could not be sent to this email")
+	ErrEmailVerificationNotDeliverable = errors.New("Error: verification email could not be sent")
 	// ErrEmailVerificationNotSent indicates an internal error. Log error internally and ask the user to re-try later
-	ErrEmailVerificationNotSent = errors.New("Error: A verification email could not be sent at this time. Please re-try later")
+	ErrEmailVerificationNotSent = errors.New("Error: verification email could not be sent at this time. Please re-try later")
 	// ErrUserNotFound indicates user could not be found on lookup
 	ErrUserNotFound = errors.New("Error: user not found")
-	// ErrTokenNotFound indicates that a token associated with a user cannot be found
-	ErrTokenNotFound = errors.New("Error: An API token of that ID is not associated with user")
-	// ErrUserVerificationTokenHasExpired indicates a user created an account, but did not verify account before token expired
-	ErrUserVerificationTokenHasExpired = errors.New("Error: Verification token has expired")
+	// ErrTokenNotFound indicates that token cannot be found
+	ErrTokenNotFound = errors.New("Error: token cannot be found")
+	// ErrEmailVerificationTokenExpired indicates a user created an account, but did not verify account before token expired
+	ErrEmailVerificationTokenExpired = errors.New("Error: Email verification token has expired")
 	// ErrAuthenticationInvalid indicates user email and password combination is invalid
 	ErrAuthenticationInvalid = errors.New("Error: Authentication credentials invalid")
 )
@@ -27,8 +27,8 @@ var (
 // User struct defines a new user
 type User struct {
 	Email     string `json:"email"`
-	FirstName string `json:"firstName,omitempty"`
-	LastName  string `json:"lastName,omitempty"`
+	FirstName string `json:"first_name,omitempty"`
+	LastName  string `json:"last_name,omitempty"`
 	Password  string `json:"password"`
 }
 

@@ -37,9 +37,9 @@ func New(accountClient *accounts.AccountClient, sessionStore *sessions.CookieSto
 
 // ListenAndServe creates a new http server instance
 func (s *Server) ListenAndServe(httpAddr string) {
-	// Set cors
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "PUT", "POST"},
 		AllowCredentials: true,
 	})
 
@@ -64,11 +64,11 @@ func (s *Server) newRouter() *httprouter.Router {
 	router := httprouter.New()
 
 	// Routes
+	router.PUT("/v1/signup", s.putSignupHandler)
 	router.GET("/status", statusHandler)
 	router.POST("/v1/signup", s.postSignupHandler)
-	router.PUT("/v1/signup", s.putSignupHandler)
 	router.POST("/v1/login", s.postLoginHandler)
-	router.POST("/v1/logout", s.postLogoutHandler)
+	router.POST("/v1/logout", s.UserAuthenticationRequired(s.postLogoutHandler))
 
 	router.GET("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.getAPIKeys))
 	router.POST("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.postAPIKey))
