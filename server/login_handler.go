@@ -77,6 +77,7 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 		http.Error(w, "error authenticating", http.StatusInternalServerError)
 		return
 	}
+
 	if session.IsNew {
 		http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
 		return
