@@ -25,7 +25,7 @@ func (a *AccountClient) DeactivateAPIKey(userID int, keyID int) error {
 func (a *AccountClient) CreateAPIKey(userID int) (*models.APIKey, error) {
 	apiKeysList, err := a.databaseClient.GetAPIKeys(userID)
 	if err != nil {
-		return nil, errors.Wrap(err, "ListAPIKeys: Error getting list of API keys")
+		return nil, errors.Wrap(err, "CreateAPIKeys: Error getting list of API keys")
 	}
 
 	var activeKeysCount int
