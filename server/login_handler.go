@@ -6,12 +6,7 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"time"
 )
-
-func setSessionExpirationTime() time.Time {
-	return time.Now().UTC().Add(30 * time.Minute)
-}
 
 // postLoginHandler authenticates a user and creates a session
 func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
