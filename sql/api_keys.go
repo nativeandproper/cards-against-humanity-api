@@ -27,6 +27,11 @@ func (dc *DatabaseClient) DeleteAPIKey(userID int, userAPIKeyID int) (bool, erro
 		return false, errors.Wrap(err, "DeleteAPIKey: Error retrieving API key")
 	}
 
+	// already deactivated
+	if !apiKey.DeletedAt.Valid {
+		return true, nil
+	}
+
 	// set DeletedAt timestamp
 	apiKey.DeletedAt.Time = time.Now().UTC()
 	apiKey.DeletedAt.Valid = true
