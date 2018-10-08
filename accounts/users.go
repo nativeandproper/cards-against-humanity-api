@@ -1,6 +1,7 @@
 package accounts
 
 import (
+	"cards-against-humanity-api/models"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
@@ -73,21 +74,20 @@ func (a *AccountClient) CreateUser(user *User) error {
 }
 
 // AuthenticateUser checks if valid user
-func (a *AccountClient) AuthenticateUser(email, password string) (int, error) {
-
+func (a *AccountClient) AuthenticateUser(email, password string) (*models.User, error) {
 	user, err := a.databaseClient.GetUserByEmail(email)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	if user == nil {
-		return 0, ErrUserNotFound
+		return nil, ErrUserNotFound
 	}
 
 	// compare password
 	validPassword := CheckPasswordHash(user.Password, []byte(password))
 	if !validPassword {
-		return user.ID, ErrAuthenticationInvalid
+		return user, ErrAuthenticationInvalid
 	}
 
-	return user.ID, nil
+	return user, nil
 }
