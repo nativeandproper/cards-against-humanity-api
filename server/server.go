@@ -16,7 +16,6 @@ const (
 	writeTimeout = time.Second * 15
 	readTimeout  = time.Second * 15
 	idleTimeout  = time.Second * 60
-	sessionToken = "cah-session-token"
 )
 
 // Server struct
