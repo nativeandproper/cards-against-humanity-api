@@ -4,7 +4,6 @@ import (
 	"cards-against-humanity-api/accounts"
 	"cards-against-humanity-api/auth"
 	"github.com/gorilla/context"
-	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -21,19 +20,17 @@ const (
 
 // Server struct
 type Server struct {
-	accounts     *accounts.AccountClient
-	auth         *auth.AuthClient
-	logger       zerolog.Logger
-	sessionStore *sessions.CookieStore
+	accounts *accounts.AccountClient
+	auth     *auth.AuthClient
+	logger   zerolog.Logger
 }
 
 // New creates a new instance of Server
-func New(accountClient *accounts.AccountClient, authClient *auth.AuthClient, sessionStore *sessions.CookieStore, logger zerolog.Logger) *Server {
+func New(accountClient *accounts.AccountClient, authClient *auth.AuthClient, logger zerolog.Logger) *Server {
 	return &Server{
-		accounts:     accountClient,
-		auth:         authClient,
-		sessionStore: sessionStore,
-		logger:       logger,
+		accounts: accountClient,
+		auth:     authClient,
+		logger:   logger,
 	}
 }
 

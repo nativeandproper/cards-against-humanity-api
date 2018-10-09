@@ -84,7 +84,7 @@ Verifies the email address associated with a user.
 
 ### POST `/v1/login`
 
-Logs the user into a session.
+Logs the user in.
 
 #### Request
 
@@ -97,7 +97,7 @@ Logs the user into a session.
 
 #### Response
 
-Sets token on cookie.
+Sets token on the Authorization Header.
 
 ```json
 {
@@ -114,7 +114,7 @@ Sets token on cookie.
 
 ### POST `/v1/logout`
 
-Logs the user out of a session.
+Logs the user out.
 
 #### Request
 

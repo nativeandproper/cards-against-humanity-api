@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// postLoginHandler authenticates a user and creates a session
+// postLoginHandler authenticates a user and sends back a JWT token
 func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	auth := struct {
 		Email    string `json:"email"`
@@ -52,7 +52,7 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 	w.Write([]byte("ok"))
 }
 
-// postLogoutHandler logs out a user from a session
+// postLogoutHandler logs out a user
 func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// TODO: sign token with last logged in timestamp
 

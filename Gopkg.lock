@@ -32,18 +32,6 @@
   version = "v1.1"
 
 [[projects]]
-  name = "github.com/gorilla/securecookie"
-  packages = ["."]
-  revision = "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983"
-  version = "v1.1.1"
-
-[[projects]]
-  name = "github.com/gorilla/sessions"
-  packages = ["."]
-  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
-  version = "v1.1"
-
-[[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -264,6 +252,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7f695ca77e676f7d04bd3d796fd4f2310b9bf2fe3a5664deaadfb7c8abe97407"
+  inputs-digest = "7f8df33793f4b70aa5d9d6f8f951b1ba75b5a6985fd5b4f7739129c5208568be"
   solver-name = "gps-cdcl"
   solver-version = 1

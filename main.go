@@ -5,14 +5,12 @@ import (
 	"cards-against-humanity-api/auth"
 	"cards-against-humanity-api/server"
 	"cards-against-humanity-api/sql"
-	"github.com/gorilla/sessions"
 	"github.com/rs/zerolog"
 	"github.com/sendgrid/sendgrid-go"
 	"os"
 )
 
 const httpAddr = "0.0.0.0:9000"
-const sessionExpiration = 86400 * 1
 
 func main() {
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
@@ -27,13 +25,6 @@ func main() {
 	sendGridAPIToken := getEnvOrPanic("CAH_SENDGRID_API_TOKEN")
 	mailClient := sendgrid.NewSendClient(sendGridAPIToken)
 
-	// create store and set session options
-	sessionStore := sessions.NewCookieStore([]byte(getEnvOrPanic("CAH_AUTH_SECRET")))
-	sessionStore.Options = &sessions.Options{
-		MaxAge:   sessionExpiration,
-		HttpOnly: true,
-	}
-
 	// connect to database
 	sqlClient, err := sql.NewSQLClient(getEnvOrPanic("CAH_DATABASE_ADDRESS"))
 	if err != nil {
@@ -47,6 +38,6 @@ func main() {
 	accountClient := accounts.NewAccountClient(databaseClient, logger, mailClient, emailVerificationURL)
 	authClient := auth.New(jwtAuthSecret)
 
-	srv := server.New(accountClient, authClient, sessionStore, logger)
+	srv := server.New(accountClient, authClient, logger)
 	srv.ListenAndServe(httpAddr)
 }
