@@ -19,6 +19,17 @@ func (dc *DatabaseClient) GetUserByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
+func (dc *DatabaseClient) GetUserByID(userID int) (*models.User, error) {
+	user, err := models.FindUser(dc.sqlClient, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "GetUserByID: error checking if user exists")
+	}
+	return user, nil
+}
+
 // CheckUserExistsByEmail checks if user with email exists
 func (dc *DatabaseClient) CheckUserExistsByEmail(email string) (bool, error) {
 	exists, err := models.Users(dc.sqlClient, Where("email=?", email)).Exists()
