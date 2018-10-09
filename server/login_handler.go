@@ -47,7 +47,7 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
 	}
 
-	r.Header.Set("Authorization", fmt.Sprintf("Bearer %v", signedToken))
+	w.Header().Set("Authorization", fmt.Sprintf("Bearer %v", signedToken))
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
