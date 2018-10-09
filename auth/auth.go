@@ -1,13 +1,14 @@
 package auth
 
 import (
+	"cards-against-humanity-api/models"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
 
 type Claims struct {
-	name   string `json:"name"`
-	userID string `json:"user_id"`
+	*models.User
 	jwt.StandardClaims
 }
 
@@ -21,11 +22,10 @@ func New(authToken []byte) *AuthClient {
 	}
 }
 
-func (a *AuthClient) Issue(userID, name string) (string, error) {
+func (a *AuthClient) Issue(user *models.User) (string, error) {
 	expiresAt := time.Now().Add(time.Hour * 24).UTC().Unix()
 	claims := &Claims{
-		userID,
-		name,
+		user,
 		jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 			Issuer:    "cards-against-humanity-api",
@@ -40,4 +40,24 @@ func (a *AuthClient) Issue(userID, name string) (string, error) {
 	}
 
 	return ss, nil
+}
+
+func (a *AuthClient) Validate(tokenStr string) (bool, error) {
+	// parse token
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Error unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(a.AuthToken), nil
+	})
+	if err != nil {
+		return false, fmt.Errorf("Error parsing jwt token: %s", err.Error())
+	}
+
+	// validate claims
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return true, nil
+	} else {
+		return false, err
+	}
 }

@@ -6,10 +6,7 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"os/user"
 )
-
-var sessionToken = "skeep"
 
 // postLoginHandler authenticates a user and creates a session
 func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -45,40 +42,19 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 		}
 	}
 
-	signedToken, err := s.auth.Issue(string(user.userID), user.Name)
+	signedToken, err := s.auth.Issue(user)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
 	}
 
-	w.Header().Set("Authorization: Bearer", signedToken)
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %v", signedToken))
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
 
 // postLogoutHandler logs out a user from a session
 func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	session, err := s.sessionStore.Get(r, sessionToken)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("postLogoutHandler: Error retrieving authentication session")
-		http.Error(w, "error authenticating", http.StatusInternalServerError)
-		return
-	}
-
-	if session.IsNew {
-		http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
-		return
-	}
-
-	// expire session
-	session.Options.MaxAge = -1
-
-	// // Save session
-	err = session.Save(r, w)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("postLogoutHandler: Error saving session")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
+	// TODO: sign token with last logged in timestamp
 
 	// Send back response
 	w.Header().Set("Content-Type", "text/plain")
@@ -89,15 +65,14 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 // UserAuthenticationRequired is authentication middleware for user requests
 func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		token := r.Header.Get("Authorization")
 
-		session, err := s.sessionStore.Get(r, sessionToken)
+		isValid, err := s.auth.Validate(token)
 		if err != nil {
-			s.logger.Error().Err(err).Msg("UserAuthenticationRequired: Error retrieving authentication session")
 			http.Error(w, "error authenticating", http.StatusInternalServerError)
 			return
 		}
-
-		if session.IsNew {
+		if !isValid {
 			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
 			return
 		}
