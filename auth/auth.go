@@ -68,6 +68,3 @@ func (a *AuthClient) Validate(tokenStr string) (bool, map[string]interface{}, er
 
 	return token.Valid, claims, nil
 }
-
-// How do I validate the user properties passed into the token (i.e. last sign out date, userID exists)
-// Where/how should I put the userID on context

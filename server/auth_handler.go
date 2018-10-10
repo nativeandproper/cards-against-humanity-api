@@ -58,6 +58,7 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 
 	w.Header().Set("Authorization", fmt.Sprintf("Bearer %v", signedToken))
 	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("access-control-expose-headers", "Authorization")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
