@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 // postLoginHandler authenticates a user and sends back a JWT token
@@ -54,7 +56,34 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 
 // postLogoutHandler logs out a user
 func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO: sign token with last logged in timestamp
+	userIDStr := ps.ByName("userID")
+	if userIDStr == "" {
+		http.Error(w, "Forbidden: Logout failed", http.StatusForbidden)
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("getUser: Error parsing userID to int")
+		http.Error(w, "Forbidden: malformed param", http.StatusForbidden)
+		return
+	}
+
+	// get user
+	user, err := s.accounts.GetUser(userID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	// update logout date
+	user.LoggedOutAt.Time = time.Now().UTC()
+	user.LoggedOutAt.Valid = true
+
+	err = s.accounts.UpdateUser(user)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
+	}
 
 	// Send back response
 	w.Header().Set("Content-Type", "text/plain")
@@ -66,6 +95,9 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		token := r.Header.Get("Authorization")
+		if token == "" {
+			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
+		}
 
 		isValid, err := s.auth.Validate(token)
 		if err != nil {

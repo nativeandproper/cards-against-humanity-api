@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/pkg/errors"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
+	"time"
 )
 
 // GetUserByEmail looks up user by email address
@@ -51,6 +52,27 @@ func (dc *DatabaseClient) InsertUser(email string, firstName string, lastName st
 	err := user.Insert(dc.sqlClient)
 	if err != nil {
 		return errors.Wrap(err, "InsertUser: error inserting user")
+	}
+
+	return nil
+}
+
+// UpdateUser inserts a new user into the database
+func (dc *DatabaseClient) UpdateUser(updatedUser *models.User) error {
+	user, err := models.FindUser(dc.sqlClient, updatedUser.ID)
+	if err != nil {
+		return err
+	}
+
+	user.FirstName = updatedUser.FirstName
+	user.LastName = updatedUser.LastName
+	user.Email = updatedUser.Email
+	user.LoggedOutAt = updatedUser.LoggedOutAt
+	user.UpdatedAt = time.Now()
+
+	err = user.Update(dc.sqlClient)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -45,3 +45,8 @@ func (a *AccountClient) GetUser(userID int) (*models.User, error) {
 
 	return user, nil
 }
+
+// GetUser fetches a user by ID
+func (a *AccountClient) UpdateUser(user *models.User) error {
+	return a.databaseClient.UpdateUser(user)
+}
