@@ -63,7 +63,7 @@ func Up00001(tx *sql.Tx) error {
 	// create api keys table
 	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS api_keys (
 			id SERIAL PRIMARY KEY,
-			api_key VARCHAR(32) UNIQUE NOT NULL,
+			api_key VARCHAR(64) UNIQUE NOT NULL,
 			created_at timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
 			deleted_at timestamp without time zone 
 	       )
