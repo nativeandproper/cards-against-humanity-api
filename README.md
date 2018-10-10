@@ -21,6 +21,13 @@ Goose doesn't support running migrations with a Golang binary from a config file
 go run cmd/main.go postgres "user={DB_USER_NAME} dbname={DB_NAME} sslmode=disable" up
 ```
 
+## Generating Models 
+
+After running migrations that modify the schema for a struct, the models must be updated. 
+Add your db user to the `sqlboiler.toml` file and in the top level directory, run:
+
+`sqlboiler postgres` 
+
 ## HTTP API Reference
 
 ### POST `/v1/signup`
