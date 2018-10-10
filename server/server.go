@@ -38,8 +38,10 @@ func New(accountClient *accounts.AccountClient, authClient *auth.AuthClient, log
 func (s *Server) ListenAndServe(httpAddr string) {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE"},
+		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
+		Debug:            true,
 	})
 
 	srv := &http.Server{

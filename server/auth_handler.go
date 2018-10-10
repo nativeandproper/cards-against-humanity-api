@@ -2,13 +2,19 @@ package server
 
 import (
 	"cards-against-humanity-api/accounts"
+	"cards-against-humanity-api/models"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
 )
+
+type contextKey string
+
+const ctxUser contextKey = "user"
 
 // postLoginHandler authenticates a user and sends back a JWT token
 func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -47,6 +53,7 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 	signedToken, err := s.auth.Issue(user)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Authorization", fmt.Sprintf("Bearer %v", signedToken))
@@ -56,23 +63,18 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 
 // postLogoutHandler logs out a user
 func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	userIDStr := ps.ByName("userID")
-	if userIDStr == "" {
-		http.Error(w, "Forbidden: Logout failed", http.StatusForbidden)
+
+	// get user from context
+	userCTX := r.Context().Value("user")
+	if userCTX == nil {
+		http.Error(w, "error no user on context", http.StatusInternalServerError)
 		return
 	}
 
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("getUser: Error parsing userID to int")
-		http.Error(w, "Forbidden: malformed param", http.StatusForbidden)
-		return
-	}
-
-	// get user
-	user, err := s.accounts.GetUser(userID)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
+	// cast to user
+	user, ok := userCTX.(*models.User)
+	if !ok {
+		http.Error(w, "error parsing user context", http.StatusInternalServerError)
 		return
 	}
 
@@ -80,12 +82,12 @@ func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps ht
 	user.LoggedOutAt.Time = time.Now().UTC()
 	user.LoggedOutAt.Valid = true
 
-	err = s.accounts.UpdateUser(user)
+	err := s.accounts.UpdateUser(user)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error authenticating user: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error updating user: %s", err.Error()), http.StatusInternalServerError)
+		return
 	}
 
-	// Send back response
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
@@ -96,19 +98,46 @@ func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Hand
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		token := r.Header.Get("Authorization")
 		if token == "" {
-			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
+			http.Error(w, "error authentication failed", http.StatusForbidden)
+			return
 		}
 
-		isValid, err := s.auth.Validate(token)
+		// trim token header
+		token = strings.TrimPrefix(token, "Bearer ")
+
+		// validate token
+		isValid, claims, err := s.auth.Validate(token)
 		if err != nil {
+			s.logger.Error().Err(err).Msg("error authenticating token")
 			http.Error(w, "error authenticating", http.StatusInternalServerError)
 			return
 		}
 		if !isValid {
-			http.Error(w, "Forbidden: Authentication Failed", http.StatusForbidden)
+			http.Error(w, "error invalid authentication", http.StatusForbidden)
 			return
 		}
 
-		h(w, r, ps)
+		userIDClaim, ok := claims["userID"]
+		if !ok {
+			http.Error(w, "error authentication failed: could not parseUserID", http.StatusForbidden)
+			return
+		}
+
+		// parse userID to int
+		userID, ok := userIDClaim.(int)
+		if !ok {
+			http.Error(w, "error authentication failed: could not cast userID to int", http.StatusInternalServerError)
+			return
+		}
+
+		user, err := s.accounts.GetUser(userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// set user on context
+		ctx := context.WithValue(r.Context(), ctxUser, user)
+		h(w, r.WithContext(ctx), ps)
 	}
 }

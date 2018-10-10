@@ -42,22 +42,32 @@ func (a *AuthClient) Issue(user *models.User) (string, error) {
 	return ss, nil
 }
 
-func (a *AuthClient) Validate(tokenStr string) (bool, error) {
+func (a *AuthClient) parse(tokenStr string) (*jwt.Token, error) {
 	// parse token
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+	return jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Error unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(a.AuthToken), nil
 	})
+}
+
+// Validate validates all the claims associated with a token
+func (a *AuthClient) Validate(tokenStr string) (bool, map[string]interface{}, error) {
+	var claims map[string]interface{}
+
+	// parse and validate the token
+	token, err := a.parse(tokenStr)
 	if err != nil {
-		return false, fmt.Errorf("Error parsing jwt token: %s", err.Error())
+		return false, nil, fmt.Errorf("Error parsing jwt token: %s", err.Error())
 	}
 
-	// validate claims
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return true, nil
-	} else {
-		return false, err
+	for key, val := range claims {
+		claims[key] = val
 	}
+
+	return token.Valid, claims, nil
 }
+
+// How do I validate the user properties passed into the token (i.e. last sign out date, userID exists)
+// Where/how should I put the userID on context
