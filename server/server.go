@@ -41,7 +41,6 @@ func (s *Server) ListenAndServe(httpAddr string) {
 		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
-		Debug:            true,
 	})
 
 	srv := &http.Server{
