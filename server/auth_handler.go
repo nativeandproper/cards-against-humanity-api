@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-type contextKey string
+type contextKeyUser string
 
-const ctxUser contextKey = "user"
+const ctxUser contextKeyUser = "cah-user"
 
 // postLoginHandler authenticates a user and sends back a JWT token
 func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -65,9 +65,8 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 
 // postLogoutHandler logs out a user
 func (s *Server) postLogoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
 	// get user from context
-	userCTX := r.Context().Value("user")
+	userCTX := r.Context().Value(ctxUser)
 	if userCTX == nil {
 		http.Error(w, "error no user on context", http.StatusInternalServerError)
 		return
