@@ -54,7 +54,7 @@ func (a *AuthClient) parse(tokenStr string) (*jwt.Token, error) {
 
 // Validate validates all the claims associated with a token
 func (a *AuthClient) Validate(tokenStr string) (bool, map[string]interface{}, error) {
-	var claims map[string]interface{}
+	claims := make(map[string]interface{})
 
 	// parse and validate the token
 	token, err := a.parse(tokenStr)
@@ -62,7 +62,12 @@ func (a *AuthClient) Validate(tokenStr string) (bool, map[string]interface{}, er
 		return false, nil, fmt.Errorf("Error parsing jwt token: %s", err.Error())
 	}
 
-	for key, val := range claims {
+	jwtTokenClaims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return false, nil, fmt.Errorf("could not parse token claims")
+	}
+
+	for key, val := range jwtTokenClaims {
 		claims[key] = val
 	}
 

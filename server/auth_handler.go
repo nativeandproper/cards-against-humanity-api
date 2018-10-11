@@ -119,20 +119,20 @@ func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Hand
 			return
 		}
 
-		userIDClaim, ok := claims["userID"]
+		userIDClaim, ok := claims["id"]
 		if !ok {
-			http.Error(w, "error authentication failed: could not parseUserID", http.StatusForbidden)
+			http.Error(w, "error authentication failed: userID not found on token", http.StatusForbidden)
 			return
 		}
 
-		// parse userID to int
-		userID, ok := userIDClaim.(int)
+		// parse userID to float64
+		userID, ok := userIDClaim.(float64)
 		if !ok {
 			http.Error(w, "error authentication failed: could not cast userID to int", http.StatusInternalServerError)
 			return
 		}
 
-		user, err := s.accounts.GetUser(userID)
+		user, err := s.accounts.GetUser(int(userID))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
