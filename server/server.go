@@ -2,8 +2,8 @@ package server
 
 import (
 	"cards-against-humanity-api/accounts"
+	"cards-against-humanity-api/auth"
 	"github.com/gorilla/context"
-	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -16,22 +16,21 @@ const (
 	writeTimeout = time.Second * 15
 	readTimeout  = time.Second * 15
 	idleTimeout  = time.Second * 60
-	sessionToken = "cah-session-token"
 )
 
 // Server struct
 type Server struct {
-	accounts     *accounts.AccountClient
-	logger       zerolog.Logger
-	sessionStore *sessions.CookieStore
+	accounts *accounts.AccountClient
+	auth     *auth.AuthClient
+	logger   zerolog.Logger
 }
 
 // New creates a new instance of Server
-func New(accountClient *accounts.AccountClient, sessionStore *sessions.CookieStore, logger zerolog.Logger) *Server {
+func New(accountClient *accounts.AccountClient, authClient *auth.AuthClient, logger zerolog.Logger) *Server {
 	return &Server{
-		accounts:     accountClient,
-		sessionStore: sessionStore,
-		logger:       logger,
+		accounts: accountClient,
+		auth:     authClient,
+		logger:   logger,
 	}
 }
 
@@ -39,7 +38,8 @@ func New(accountClient *accounts.AccountClient, sessionStore *sessions.CookieSto
 func (s *Server) ListenAndServe(httpAddr string) {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE"},
+		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
 	})
 
@@ -70,6 +70,7 @@ func (s *Server) newRouter() *httprouter.Router {
 	router.POST("/v1/login", s.postLoginHandler)
 	router.POST("/v1/logout", s.UserAuthenticationRequired(s.postLogoutHandler))
 
+	router.GET("/v1/user/:userID", s.UserAuthenticationRequired(s.getUser))
 	router.GET("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.getAPIKeys))
 	router.POST("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.postAPIKey))
 	router.DELETE("/v1/user/:userID/apikey/:apiKey", s.UserAuthenticationRequired(s.deleteAPIKey))

@@ -21,7 +21,7 @@ var (
 	// ErrEmailVerificationTokenExpired indicates a user created an account, but did not verify account before token expired
 	ErrEmailVerificationTokenExpired = errors.New("Error: Email verification token has expired")
 	// ErrAuthenticationInvalid indicates user email and password combination is invalid
-	ErrAuthenticationInvalid = errors.New("Error: Authentication credentials invalid")
+	ErrAuthenticationInvalid = errors.New("Error: Username or password invalid")
 )
 
 // User struct defines a new user
