@@ -60,7 +60,9 @@ func (s *Server) postLoginHandler(w http.ResponseWriter, r *http.Request, ps htt
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("access-control-expose-headers", "Authorization")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("ok"))
+	json.NewEncoder(w).Encode(struct {
+		UserID int `json:"user_id"`
+	}{user.ID})
 }
 
 // postLogoutHandler logs out a user
