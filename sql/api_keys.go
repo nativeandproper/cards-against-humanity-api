@@ -95,3 +95,8 @@ func (dc *DatabaseClient) GetAPIKeys(userID int) (models.APIKeySlice, error) {
 		Where("uak.user_id= ?", userID),
 	).All()
 }
+
+// Get API key by token
+func (dc *DatabaseClient) GetAPIKey(key string) (*models.APIKey, error) {
+	return models.APIKeys(dc.sqlClient, Where("api_key=?", key)).One()
+}

@@ -61,3 +61,7 @@ func (a *AccountClient) ListAPIKeys(userID int) (models.APIKeySlice, error) {
 
 	return apiKeys, nil
 }
+
+func (a *AccountClient) GetAPIKey(key string) (*models.APIKey, error) {
+	return a.databaseClient.GetAPIKey(key)
+}
