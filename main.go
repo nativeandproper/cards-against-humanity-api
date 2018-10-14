@@ -3,11 +3,14 @@ package main
 import (
 	"cards-against-humanity-api/accounts"
 	"cards-against-humanity-api/auth"
+	"cards-against-humanity-api/ratelimiter"
 	"cards-against-humanity-api/server"
 	"cards-against-humanity-api/sql"
+	"github.com/go-redis/redis"
 	"github.com/rs/zerolog"
 	"github.com/sendgrid/sendgrid-go"
 	"os"
+	"time"
 )
 
 const httpAddr = "0.0.0.0:9000"
@@ -34,10 +37,20 @@ func main() {
 	}
 	defer sqlClient.Close()
 
+	redisAddr := getEnvOrPanic("CAH_REDIS_ADDR")
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: redisAddr,
+	})
+	rateLimiterClient := ratelimiter.New(redisClient, &ratelimiter.LimiterOptions{
+		Namespace:     "rate-limit-",
+		SlidingWindow: 5 * time.Minute,
+		Limit:         int64(5),
+	})
+
 	databaseClient := sql.NewDatabaseClient(sqlClient, logger)
 	accountClient := accounts.NewAccountClient(databaseClient, logger, mailClient, emailVerificationURL)
 	authClient := auth.New(jwtAuthSecret)
 
-	srv := server.New(accountClient, authClient, logger)
+	srv := server.New(accountClient, authClient, rateLimiterClient, logger)
 	srv.ListenAndServe(httpAddr)
 }

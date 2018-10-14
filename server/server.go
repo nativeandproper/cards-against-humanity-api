@@ -3,6 +3,7 @@ package server
 import (
 	"cards-against-humanity-api/accounts"
 	"cards-against-humanity-api/auth"
+	"cards-against-humanity-api/ratelimiter"
 	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
@@ -20,17 +21,19 @@ const (
 
 // Server struct
 type Server struct {
-	accounts *accounts.AccountClient
-	auth     *auth.AuthClient
-	logger   zerolog.Logger
+	accounts    *accounts.AccountClient
+	auth        *auth.AuthClient
+	rateLimiter *ratelimiter.Limiter
+	logger      zerolog.Logger
 }
 
 // New creates a new instance of Server
-func New(accountClient *accounts.AccountClient, authClient *auth.AuthClient, logger zerolog.Logger) *Server {
+func New(accountClient *accounts.AccountClient, authClient *auth.AuthClient, rateLimiterClient *ratelimiter.Limiter, logger zerolog.Logger) *Server {
 	return &Server{
-		accounts: accountClient,
-		auth:     authClient,
-		logger:   logger,
+		accounts:    accountClient,
+		auth:        authClient,
+		rateLimiter: rateLimiterClient,
+		logger:      logger,
 	}
 }
 
