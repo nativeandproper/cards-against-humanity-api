@@ -3,9 +3,10 @@ package sql
 import (
 	"cards-against-humanity-api/models"
 	"database/sql"
+	"time"
+
 	"github.com/pkg/errors"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
-	"time"
 )
 
 // DeleteAPIKey expires an API Key associated with a user
@@ -19,7 +20,7 @@ func (dc *DatabaseClient) DeleteAPIKey(userID int, userAPIKeyID int) (bool, erro
 		return false, nil
 	}
 
-	apiKey, err := models.FindAPIKey(dc.sqlClient, userAPIKey.APIKeyID)
+	apiKey, err := models.FindAPIKey(dc.sqlClient, userAPIKeyID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil
@@ -28,7 +29,7 @@ func (dc *DatabaseClient) DeleteAPIKey(userID int, userAPIKeyID int) (bool, erro
 	}
 
 	// already deactivated
-	if !apiKey.DeletedAt.Valid {
+	if apiKey.DeletedAt.Valid {
 		return true, nil
 	}
 
@@ -90,7 +91,7 @@ func (dc *DatabaseClient) InsertAPIKey(userID int, token string) (*models.APIKey
 // GetAPIKeys gets list of all API Keys associated with user
 func (dc *DatabaseClient) GetAPIKeys(userID int) (models.APIKeySlice, error) {
 	return models.APIKeys(dc.sqlClient,
-		Select("*"),
+		Select("api_keys.id, api_keys.api_key, api_keys.created_at, api_keys.deleted_at"),
 		InnerJoin("user_api_keys uak on uak.api_key_id = api_keys.id"),
 		Where("uak.user_id= ?", userID),
 	).All()

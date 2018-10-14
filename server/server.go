@@ -3,13 +3,14 @@ package server
 import (
 	"cards-against-humanity-api/accounts"
 	"cards-against-humanity-api/auth"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
-	"net/http"
-	"strings"
-	"time"
 )
 
 const (
@@ -73,7 +74,7 @@ func (s *Server) newRouter() *httprouter.Router {
 	router.GET("/v1/user/:userID", s.UserAuthenticationRequired(s.getUser))
 	router.GET("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.getAPIKeys))
 	router.POST("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.postAPIKey))
-	router.DELETE("/v1/user/:userID/apikey/:apiKey", s.UserAuthenticationRequired(s.deleteAPIKey))
+	router.DELETE("/v1/user/:userID/apikey/:apiKeyID", s.UserAuthenticationRequired(s.deleteAPIKey))
 
 	return router
 }
