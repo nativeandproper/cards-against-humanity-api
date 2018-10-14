@@ -4,9 +4,10 @@ import (
 	"cards-against-humanity-api/accounts"
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -25,15 +26,15 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	// Ensure APIKey param exists
-	APIKeyStr := ps.ByName("apiKey")
-	if APIKeyStr == "" {
+	// Ensure APIKeyID param exists
+	APIKeyIDStr := ps.ByName("apiKeyID")
+	if APIKeyIDStr == "" {
 		http.Error(w, "Forbidden: missing expected param", http.StatusForbidden)
 		return
 	}
 
-	// Parse APIKey to int
-	APIKey, err := strconv.Atoi(APIKeyStr)
+	// Parse APIKeyID to int
+	APIKeyID, err := strconv.Atoi(APIKeyIDStr)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("postAPIKey: Error parsing userID to int")
 		http.Error(w, "Forbidden: malformed param", http.StatusForbidden)
@@ -41,7 +42,7 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	// Delete API key
-	err = s.accounts.DeactivateAPIKey(userID, APIKey)
+	err = s.accounts.DeactivateAPIKey(userID, APIKeyID)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("deleteAPIKey: Error invalidating API key")
 		switch err {
