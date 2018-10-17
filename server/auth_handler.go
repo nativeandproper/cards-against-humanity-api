@@ -107,14 +107,10 @@ func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Hand
 		token = strings.TrimPrefix(token, "Bearer ")
 
 		// validate token
-		isValid, claims, err := s.auth.Validate(token)
+		claims, err := s.auth.ValidateWithClaims(token)
 		if err != nil {
 			s.logger.Error().Err(err).Msg("error authenticating token")
-			http.Error(w, "error authenticating", http.StatusInternalServerError)
-			return
-		}
-		if !isValid {
-			http.Error(w, "error invalid authentication", http.StatusForbidden)
+			http.Error(w, "error invalid token", http.StatusForbidden)
 			return
 		}
 
@@ -141,4 +137,24 @@ func (s *Server) UserAuthenticationRequired(h httprouter.Handle) httprouter.Hand
 		ctx := context.WithValue(r.Context(), ctxUser, user)
 		h(w, r.WithContext(ctx), ps)
 	}
+}
+
+func (s *Server) getAuthStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	authStatus := struct {
+		IsAuth bool `json:"is_authenticated"`
+	}{}
+
+	// get token from header
+	token := r.Header.Get("Authorization")
+	if token != "" {
+		token = strings.TrimPrefix(token, "Bearer ")
+	}
+
+	// validate
+	isValidToken := s.auth.IsValidToken(token)
+	authStatus.IsAuth = isValidToken
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(authStatus)
 }
