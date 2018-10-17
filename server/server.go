@@ -65,11 +65,13 @@ func (s *Server) newRouter() *httprouter.Router {
 	router := httprouter.New()
 
 	// Routes
-	router.PUT("/v1/signup", s.putSignupHandler)
 	router.GET("/status", statusHandler)
+
+	router.PUT("/v1/signup", s.putSignupHandler)
 	router.POST("/v1/signup", s.postSignupHandler)
 	router.POST("/v1/login", s.postLoginHandler)
 	router.POST("/v1/logout", s.UserAuthenticationRequired(s.postLogoutHandler))
+	router.GET("/v1/auth", s.getAuthStatus)
 
 	router.GET("/v1/user/:userID", s.UserAuthenticationRequired(s.getUser))
 	router.GET("/v1/user/:userID/apikey", s.UserAuthenticationRequired(s.getAPIKeys))

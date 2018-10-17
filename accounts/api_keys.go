@@ -53,11 +53,17 @@ func (a *AccountClient) CreateAPIKey(userID int) (*models.APIKey, error) {
 }
 
 // ListAPIKeys lists all API keys associated with a user
-func (a *AccountClient) ListAPIKeys(userID int) (models.APIKeySlice, error) {
+func (a *AccountClient) ListAPIKeys(userID int) ([]*models.APIKey, error) {
 	apiKeys, err := a.databaseClient.GetAPIKeys(userID)
 	if err != nil {
 		return nil, errors.Wrap(err, "ListAPIKeys: Error getting list of user API keys")
 	}
 
-	return apiKeys, nil
+	// convert slice to array
+	apiKeyList := make([]*models.APIKey, len(apiKeys))
+	for i, ak := range apiKeys {
+		apiKeyList[i] = ak
+	}
+
+	return apiKeyList, nil
 }
