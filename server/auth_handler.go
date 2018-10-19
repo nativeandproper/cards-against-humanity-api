@@ -6,10 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type contextKeyUser string
@@ -154,7 +155,7 @@ func (s *Server) getAuthStatus(w http.ResponseWriter, r *http.Request, ps httpro
 	isValidToken := s.auth.IsValidToken(token)
 	authStatus.IsAuth = isValidToken
 
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(authStatus)
 }
