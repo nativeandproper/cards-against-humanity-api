@@ -7,13 +7,16 @@ update: # update dependencies
 
 run: # start running containers 
 		docker-compose start
+		go run *.go
 
-stop: # stop running containers 
+stop: # stop running containers
 		docker-compose stop
 
-cleanup:
+cleanup: # stop and remove containers
 		docker-compose cleanup
 
-migrate: # apply migrations  
-		./scripts/migrate.sh
+models: # re-generate models
+		sqlboiler postgres
 
+migrate: # apply migrations
+		./scripts/migrate.sh
