@@ -1,6 +1,6 @@
 
 install: # install dependencies 
-		dep ensure
+		./scripts/install.sh
 
 update: # update dependencies
 		dep ensure -update 
