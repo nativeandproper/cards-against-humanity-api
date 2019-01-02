@@ -6,24 +6,16 @@ Public API for Cards Against Humanity Game
 
 ### Setup 
 
+#### Local Dev
+Run `make start`
 
-### Local Dev 
-From project directory:
+#### Migrations
+Run `make migrate`
 
-```BASH
-  source .env
- `go run *.go`
-```
+#### Models
 
-## Migrations
-make migrate
-
-## Generating Models 
-
-After running migrations that modify the schema for a struct, the models must be updated. 
-Add your db user to the `sqlboiler.toml` file and in the top level directory, run:
-
-`sqlboiler postgres` 
+After running migrations that modify the schema for a struct, the models re-generated.
+Run `make models`
 
 ## HTTP API Reference
 
