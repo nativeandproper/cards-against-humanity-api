@@ -11,6 +11,9 @@ run: # start running containers
 stop: # stop running containers 
 		docker-compose stop
 
+cleanup:
+		docker-compose cleanup
+
 migrate: # apply migrations  
 		./scripts/migrate.sh
 
