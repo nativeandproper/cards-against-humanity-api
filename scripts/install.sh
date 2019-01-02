@@ -47,7 +47,7 @@ else
 fi
 
 echo "running migrations on local database $POSTGRES_DB_NAME ..."
-go run $MIGRATION_DIR/main.go postgres "user=$POSTGRES_USER password=$POSTGRES_PASSWORD dbname=$POSTGRES_DB_NAME sslmode=disable" status
+go run $MIGRATION_DIR/main.go postgres "user=$POSTGRES_USER password=$POSTGRES_PASSWORD dbname=$POSTGRES_DB_NAME sslmode=disable" up
 echo "migrations complete"
 
 echo "installation complete"
