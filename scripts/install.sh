@@ -1,11 +1,5 @@
 #! /bin/bash
 
-POSTGRES_USER=docker
-POSTGRES_PASSWORD=docker 
-POSTGRES_DB_NAME=cah_dev 
-POSTGRES_CONTAINER_NAME=cah_postgres
-POSTGRES_EXISTING_CONTAINER_ID="$(docker ps -aq -f status=exited -f name=$POSTGRES_CONTAINER)"
-
 MIGRATION_DIR=db/cmd
 
 # Docker for Mac
@@ -33,19 +27,14 @@ fi
 echo "installing packages..."
 dep ensure 
 
-# Postgres container 
-if [ $POSTGRES_EXISTING_CONTAINER_ID ]; then
-    echo "starting existing Postgres container..."
-    docker container start $POSTGRES_EXISTING_CONTAINER_ID
-elif  [ ! "$(docker ps -q -f name=$POSTGRES_CONTAINER_NAME)" ]; then
-    echo "starting postgres docker container..."
-    docker run -d --name=$POSTGRES_CONTAINER_NAME -p 5432:5432 -e POSTGRES_USER=$POSTGRES_USER -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -e POSTGRES_DB=$POSTGRES_DB_NAME library/postgres
-else 
-    echo "running postgres container found" 
-fi
+# Pull containers
+docker-compose up --no-recreate -d
 
-echo "running migrations on local database $POSTGRES_DB_NAME ..."
+# Run migrations 
+echo "running migrations on local database $POSTGRES_DB_NAME..."
 go run $MIGRATION_DIR/main.go postgres "user=$POSTGRES_USER password=$POSTGRES_PASSWORD dbname=$POSTGRES_DB_NAME sslmode=disable" up
 echo "migrations complete"
+
+docker-compose stop
 
 echo "installation complete"

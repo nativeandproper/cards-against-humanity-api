@@ -6,8 +6,8 @@ update: # update dependencies
 		dep ensure -update 
 
 run: # start running containers 
-		docker-compose start
-		go run *.go
+		docker-compose up -d
+		. .env && go run *.go
 
 stop: # stop running containers
 		docker-compose stop
