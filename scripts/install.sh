@@ -31,10 +31,7 @@ dep ensure
 docker-compose up --no-recreate -d
 
 # Run migrations 
-echo "running migrations on local database $POSTGRES_DB_NAME..."
-go run $MIGRATION_DIR/main.go postgres "user=$POSTGRES_USER password=$POSTGRES_PASSWORD dbname=$POSTGRES_DB_NAME sslmode=disable" up
-echo "migrations complete"
+make migrate
 
 docker-compose stop
-
 echo "installation complete"
