@@ -1,11 +1,11 @@
 
-install: # install dependencies 
+install: 
 		./scripts/install.sh
 
-update: # update dependencies
+update: # updates dependencies
 		dep ensure -update 
 
-run: # start running containers 
+run: # run local dev  
 		docker-compose up -d
 		. .env && go run *.go
 
