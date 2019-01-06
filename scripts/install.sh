@@ -1,7 +1,5 @@
 #! /bin/bash
 
-MIGRATION_DIR=db/cmd
-
 # Docker for Mac
 echo "checking for Docker ..." 
 if ! [ -x "$(command -v docker)" ]; then
