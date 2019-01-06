@@ -1,9 +1,10 @@
 package accounts
 
 import (
-	"cards-against-humanity-api/models"
 	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 // CreateUser inserts a new user into the database

@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"bytes"
-	"cards-against-humanity-api/models"
 	"crypto/rand"
 	b64 "encoding/base64"
 	"fmt"
@@ -11,6 +10,8 @@ import (
 	"html/template"
 	mRand "math/rand"
 	"time"
+
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 const (

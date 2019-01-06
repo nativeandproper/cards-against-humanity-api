@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	_ "cards-against-humanity-api/db/migrations"
+	_ "github.com/nativeandproper/cards-against-humanity-api/db/migrations"
 	"github.com/pressly/goose"
 
 	// Init DB drivers.

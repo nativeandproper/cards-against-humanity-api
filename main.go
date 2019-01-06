@@ -1,13 +1,14 @@
 package main
 
 import (
-	"cards-against-humanity-api/accounts"
-	"cards-against-humanity-api/auth"
-	"cards-against-humanity-api/server"
-	"cards-against-humanity-api/sql"
 	"github.com/rs/zerolog"
 	"github.com/sendgrid/sendgrid-go"
 	"os"
+
+	"github.com/nativeandproper/cards-against-humanity-api/accounts"
+	"github.com/nativeandproper/cards-against-humanity-api/auth"
+	"github.com/nativeandproper/cards-against-humanity-api/server"
+	"github.com/nativeandproper/cards-against-humanity-api/sql"
 )
 
 const httpAddr = "0.0.0.0:9000"

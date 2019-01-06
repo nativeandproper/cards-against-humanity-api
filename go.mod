@@ -1,0 +1,37 @@
+module github.com/nativeandproper/cards-against-humanity-api
+
+require (
+	github.com/denisenkom/go-mssqldb v0.0.0-20180127144157-ee492709d432
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fsnotify/fsnotify v1.4.7
+	github.com/go-sql-driver/mysql v1.3.0
+	github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f
+	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb
+	github.com/julienschmidt/httprouter v1.1.0
+	github.com/kat-co/vala v0.0.0-20140812221447-bfe9b50e828a
+	github.com/lib/pq v0.0.0-20180123210206-19c8e9ad0095
+	github.com/magiconair/properties v1.7.4
+	github.com/mattn/go-sqlite3 v1.6.0
+	github.com/mitchellh/mapstructure v0.0.0-20180111000720-b4575eea38cc
+	github.com/pelletier/go-toml v1.1.0
+	github.com/pkg/errors v0.8.0
+	github.com/pressly/goose v2.1.0+incompatible
+	github.com/rs/cors v1.3.0
+	github.com/rs/zerolog v1.5.0
+	github.com/satori/go.uuid v1.2.0
+	github.com/sendgrid/rest v2.4.0+incompatible
+	github.com/sendgrid/sendgrid-go v3.4.1+incompatible
+	github.com/spf13/afero v1.0.2
+	github.com/spf13/cast v1.1.0
+	github.com/spf13/jwalterweatherman v0.0.0-20180109140146-7c0cea34c8ec
+	github.com/spf13/pflag v1.0.0
+	github.com/spf13/viper v1.0.0
+	github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d
+	github.com/volatiletech/sqlboiler v2.6.0+incompatible
+	github.com/ziutek/mymysql v1.5.4
+	golang.org/x/crypto v0.0.0-20180127211104-1875d0a70c90
+	golang.org/x/sys v0.0.0-20180126165840-ff2a66f350ce
+	golang.org/x/text v0.0.0-20171227012246-e19ae1496984
+	gopkg.in/volatiletech/null.v6 v6.0.0-20170828023728-0bef4e07ae1b
+	gopkg.in/yaml.v2 v2.0.0
+)

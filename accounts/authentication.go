@@ -1,9 +1,10 @@
 package accounts
 
 import (
-	"cards-against-humanity-api/models"
 	"golang.org/x/crypto/bcrypt"
 	"unicode"
+
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 const hashCost = 14

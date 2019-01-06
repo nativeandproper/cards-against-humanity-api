@@ -1,9 +1,10 @@
 package accounts
 
 import (
-	"cards-against-humanity-api/models"
 	"fmt"
 	"github.com/pkg/errors"
+
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 const maxAPIKeyLimit = 3

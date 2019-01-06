@@ -1,10 +1,10 @@
 package sql
 
 import (
-	"cards-against-humanity-api/models"
 	"database/sql"
 	"time"
 
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 	"github.com/pkg/errors"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
 )

@@ -1,10 +1,11 @@
 package auth
 
 import (
-	"cards-against-humanity-api/models"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
+
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 type Claims struct {

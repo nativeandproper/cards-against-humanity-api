@@ -1,7 +1,7 @@
 package accounts
 
 import (
-	"cards-against-humanity-api/sql"
+	"github.com/nativeandproper/cards-against-humanity-api/sql"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/sendgrid/sendgrid-go"
