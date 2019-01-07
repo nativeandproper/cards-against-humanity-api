@@ -1,13 +1,14 @@
 package server
 
 import (
-	"cards-against-humanity-api/accounts"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+
+	"github.com/nativeandproper/cards-against-humanity-api/accounts"
 )
 
 func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

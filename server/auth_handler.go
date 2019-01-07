@@ -1,8 +1,6 @@
 package server
 
 import (
-	"cards-against-humanity-api/accounts"
-	"cards-against-humanity-api/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,6 +9,8 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/nativeandproper/cards-against-humanity-api/accounts"
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 type contextKeyUser string

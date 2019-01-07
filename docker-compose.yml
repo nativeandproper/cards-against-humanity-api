@@ -1,18 +1,45 @@
-version: "3"
+version: '2.1'
 
 services:
+  cah_api:
+    container_name: cah_api
+    image: melindabernrdo/cah:latest
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      CAH_DATABASE_ADDRESS: "host=postgres port=5432 user=docker password=docker dbname=cah_dev sslmode=disable"
+      CAH_SENDGRID_API_TOKEN: ${CAH_SENDGRID_API_TOKEN}
+      CAH_VERIFICATION_URL: ${CAH_VERIFICATION_URL}
+      CAH_AUTH_SECRET: ${CAH_AUTH_SECRET}
+      CAH_REDIS_ADDR: "redis:6379"
+      RATE_LIMIT_MAX_DAILY_LIMIT: 10
+      RATE_LIMIT_MAX_INTERVAL_LIMIT: 3
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    links:
+      - postgres:postgres
+
   postgres:
-      container_name: cah_postgres
-      image: postgres:11.1-alpine
-      restart: always
-      ports: 
-        - "5432:5432"
-      volumes:
-        - postgres-data:/var/lib/postgresql/data
-      environment: 
-        POSTGRES_DB: cah_dev
-        POSTGRES_USER: docker
-        POSTGRES_PASSWORD: docker
+    container_name: cah_postgres
+    image: postgres:11.1-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: cah_dev
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docker -d cah_dev -h localhost -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     container_name: cah_redis

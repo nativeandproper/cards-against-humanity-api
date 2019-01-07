@@ -1,14 +1,14 @@
 package server
 
 import (
-	"cards-against-humanity-api/accounts"
-	"cards-against-humanity-api/auth"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
+	"github.com/nativeandproper/cards-against-humanity-api/accounts"
+	"github.com/nativeandproper/cards-against-humanity-api/auth"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 )

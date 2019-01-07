@@ -5,9 +5,12 @@ Public API for Cards Against Humanity Game
 ## API
 
 ### Setup 
-Dependencies 
-  - Golang 
-  - Docker 
+Requirements 
+  - Go 1.11+
+
+#### Dependencies 
+  - [Golang](https://golang.org/doc/install)
+  - [Docker](https://docs.docker.com/docker-for-mac/install/) 
 
 #### Local Dev
 Run `make run`
@@ -16,9 +19,7 @@ Run `make run`
 Run `make migrate`
 
 #### Models
-
-After running migrations that modify the schema for a struct, re-generate the models.
-Run `make models`
+After running migrations that modify the schema for a struct, re-generate the models. Run `make models`
 
 ## HTTP API Reference
 

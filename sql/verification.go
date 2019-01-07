@@ -1,11 +1,12 @@
 package sql
 
 import (
-	"cards-against-humanity-api/models"
 	"database/sql"
 	"github.com/pkg/errors"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
 	"time"
+
+	"github.com/nativeandproper/cards-against-humanity-api/models"
 )
 
 // InsertEmailVerification associates a verification token with a user
