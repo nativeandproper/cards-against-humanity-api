@@ -1,4 +1,5 @@
 
+COMMIT := $(shell basename `git rev-parse --short HEAD`)
 DOCKER_REPO := melindabernrdo/cah
 
 install:
