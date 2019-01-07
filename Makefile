@@ -1,13 +1,20 @@
 
-install: 
+DOCKER_REPO := melindabernrdo/cah
+
+install:
 		./scripts/install.sh
+
+build:
+		docker build --no-cache -t ${DOCKER_REPO}:latest \
+			-t ${DOCKER_REPO}:"commit-${COMMIT}" .
+push:
+		docker push melindabernrdo/cah:latest
 
 update: # updates dependencies
 		dep ensure -update 
 
 run: # run local dev  
 		docker-compose up -d
-		. .env && go run *.go
 
 stop: # stop running containers
 		docker-compose stop
